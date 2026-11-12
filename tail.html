@@ -12,15 +12,16 @@
 :root{
   --bg:#F3F5F7; --sheet:#FFFFFF; --ink:#141A21; --muted:#56616D; --rule:#D5DBE1; --tint:#E8EDF2;
   --accent:#1F5B8F; --accent-soft:#DDE8F3; --up:#1E7A4C; --down:#B03A2E; --alt:#B07A12; --press:#C98A12;
+  --sea:#DCE5EC; --land:#C8D0D7; --hold:#86BFA0; --edge:#7D8A97; --violet:#6B4FA0;
   --f-disp:"Archivo","Arial Narrow",Arial,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
-  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; --press:#E3B24F; color-scheme:dark}}
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; --press:#E3B24F; --sea:#0D1822; --land:#26313C; --hold:#2E6048; --edge:#465565; --violet:#B48EEA; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
-  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; --press:#E3B24F; color-scheme:dark}
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; --press:#E3B24F; --sea:#0D1822; --land:#26313C; --hold:#2E6048; --edge:#465565; --violet:#B48EEA; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);margin:0}
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:40px}
@@ -100,6 +101,17 @@ ul.kv{margin:0;padding-left:18px;font-size:13.5px} ul.kv li{margin:3px 0}
 .pp{font:600 12px var(--f-mono);margin-left:6px}
 .src{font:500 10.5px var(--f-mono);color:var(--muted);margin-left:6px}
 .sen{display:block;font-size:12px;color:var(--muted)}
+
+.mapwrap{position:relative;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--sea);touch-action:none}
+.mapwrap canvas{display:block;width:100%;cursor:grab}
+.mapwrap canvas:active{cursor:grabbing}
+.mapbtns{position:absolute;left:10px;top:10px;display:flex;gap:6px}
+.tip{position:absolute;pointer-events:none;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;font-size:12.5px;max-width:min(280px,80vw);box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:2}
+.tip b{display:block;font-size:13.5px;margin-bottom:2px}
+.sup{display:grid;grid-template-columns:minmax(0,1fr) 120px 42px;gap:8px;align-items:center;font-size:13px}
+.sup .tr{height:8px;background:var(--tint);border-radius:2px;overflow:hidden}.sup .tr i{display:block;height:100%}
+.hits label{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;padding:3px 0;cursor:pointer}
+details.alt summary{cursor:pointer;font:500 12.5px var(--f-mono);color:var(--accent)}
 footer{font-size:13px;border-top:1px solid var(--rule);padding-top:14px}
 </style>
 </head>
@@ -126,9 +138,12 @@ footer{font-size:13px;border-top:1px solid var(--rule);padding-top:14px}
       </div>
       <div class="stack">
         <div class="sum" id="gsum"></div>
-        <div class="legend"><span><i class="b-br"></i>broken</span><span><i class="b-pr"></i>under pressure (≥70% of strength)</span><span><i class="b-ok"></i>holds</span></div>
-        <div class="tiles" id="tiles"></div>
+        <div class="mapwrap" id="mapwrap"><canvas id="map" aria-label="Map of jurisdictions coloured by wall status; click a country to see its walls"></canvas>
+          <div class="mapbtns"><button class="pill" id="vEU">Europe</button><button class="pill" id="vW">World</button></div>
+          <div class="tip" id="tip" hidden></div></div>
+        <div class="legend"><span><i class="b-br"></i>has broken walls</span><span><i class="b-pr"></i>under pressure (≥70% of strength)</span><span><i style="background:var(--hold)"></i>all walls hold</span><span>· scroll to zoom, drag to move, click a country</span></div>
         <div class="stack" id="cwalls"></div>
+        <details class="alt"><summary>All 21 jurisdictions as a list</summary><div class="tiles" id="tiles" style="margin-top:10px"></div></details>
       </div>
     </div>
   </section>
@@ -197,18 +212,81 @@ let CUR='UK';
 function renderGame(){
   const beyond=$('beyond').checked, eff={};
   for(const [k,v] of Object.entries(SEL)){ const m=W.moves[k]; eff[k]=v*(beyond&&m.pm!=null?1-m.pm:1); }
-  const R=play(eff);
+  const R=play(eff); LAST.R=R; LAST.eff=eff;
   const by={}; for(const [w,r] of Object.entries(R)){ const c=W.walls[w].c; (by[c]=by[c]||{n:0,b:0,p:0}).n++; if(r.s===2) by[c].b++; else if(r.s===1) by[c].p++; }
   const nb=Object.values(R).filter(r=>r.s===2).length, np=Object.values(R).filter(r=>r.s===1).length, nc=Object.values(by).filter(x=>x.b+x.p>0).length;
   $('gsum').innerHTML=`<div class="st"><div class="v">${Object.keys(SEL).length}</div><div class="k">moves in play</div></div><div class="st"><div class="v" style="color:var(--down)">${nb}</div><div class="k">walls broken</div></div><div class="st"><div class="v" style="color:var(--press)">${np}</div><div class="k">under pressure</div></div><div class="st"><div class="v">${nc}</div><div class="k">jurisdictions hit</div></div>`;
   $('tiles').innerHTML=Object.entries(W.countries).map(([c,nm])=>{const x=by[c]||{n:0,b:0,p:0}; const ok=x.n-x.b-x.p;
     return `<button class="tile" data-c="${c}" aria-pressed="${c===CUR}"><span class="nm">${esc(nm)}</span><span class="bar"><i class="b-br" style="width:${x.b/x.n*100}%"></i><i class="b-pr" style="width:${x.p/x.n*100}%"></i><i class="b-ok" style="width:${ok/x.n*100}%"></i></span><span class="cnt">${x.n} walls · ${x.b} broken · ${x.p} pressed</span></button>`;}).join('');
   $('tiles').querySelectorAll('.tile').forEach(t=>t.onclick=()=>{CUR=t.dataset.c; renderGame();});
+  LAST.by=by; LAST.lv=levels(eff); drawMap();
   const rows=Object.entries(W.walls).filter(([w,d])=>d.c===CUR).map(([w,d])=>({w,d,r:R[w]})).sort((a,b)=>b.r.s-a.r.s||b.r.p-a.r.p);
   const lab=['holds','pressed','broken'], cls=['s-ok','s-pr','s-br'];
-  $('cwalls').innerHTML=`<h3>${esc(W.countries[CUR])}: lines of defence</h3><div class="tw"><table><thead><tr><th>Wall</th><th>Line</th><th class="n">Strength</th><th class="n">Push</th><th>Status</th></tr></thead><tbody>${rows.map(({w,d,r})=>`<tr><td><span class="mono muted" style="font-size:11px">${w}</span> ${esc(d.n)}</td><td>${d.l}</td><td class="n">${r.f.toFixed(2)}</td><td class="n">${r.p?r.p.toFixed(2):'—'}</td><td><span class="s ${cls[r.s]}">${lab[r.s]}</span></td></tr>`).join('')}</tbody></table></div>
+  const sups=Object.entries(W.sup).filter(([k])=>supMine(k,CUR));
+  const hitters=Object.entries(W.moves).filter(([k,m])=>(m.hit||[]).includes(CUR));
+  $('cwalls').innerHTML=`<h3>${esc(W.countries[CUR])}: ${by[CUR]?by[CUR].b:0} broken, ${by[CUR]?by[CUR].p:0} under pressure</h3>
+  ${sups.length?`<div class="stack" style="gap:6px"><div class="eyebrow">Supports: shared resources the walls rely on</div>${sups.map(([k,sp])=>{const l=LAST.lv[k]!=null?LAST.lv[k]:sp.l0; return `<div class="sup"><span>${esc(sp.n)}</span><span class="tr"><i style="width:${l*100}%;background:${l<0.34?'var(--down)':l<0.67?'var(--press)':'var(--up)'}"></i></span><span class="mono">${Math.round(l*100)}%</span></div>`;}).join('')}</div>`:''}
+  ${hitters.length?`<div class="stack hits" style="gap:2px"><div class="eyebrow">Moves that hit ${esc(W.countries[CUR])}</div>${hitters.map(([k,m])=>`<label><input type="checkbox" data-k="${k}" ${k in SEL?'checked':''}><span><b class="mono" style="font-size:11.5px">${k}</b> ${esc(m.m)}</span></label>`).join('')}</div>`:''}
+  <div class="eyebrow">Walls</div><div class="tw"><table><thead><tr><th>Wall</th><th>Line</th><th class="n">Strength</th><th class="n">Push</th><th>Status</th></tr></thead><tbody>${rows.map(({w,d,r})=>`<tr><td><span class="mono muted" style="font-size:11px">${w}</span> ${esc(d.n)}</td><td>${d.l}</td><td class="n">${r.f.toFixed(2)}</td><td class="n">${r.p?r.p.toFixed(2):'—'}</td><td><span class="s ${cls[r.s]}">${lab[r.s]}</span></td></tr>`).join('')}</tbody></table></div>
   <p class="muted" style="font-size:13px">Strength starts at the wall's effort (1 = rear guard, 3 = main line) and falls when a move drains a support it relies on. In the desktop model, UK walls also take pressure from inside, through the UK contagion web of 26 nodes; that inner layer is not part of this web version.</p>`;
+  $('cwalls').querySelectorAll('.hits input').forEach(i=>i.onchange=()=>{ i.checked?SEL[i.dataset.k]=1:delete SEL[i.dataset.k]; renderMoves(); renderGame(); });
 }
+function levels(sel){const level={}; for(const k in W.sup) level[k]=W.sup[k].l0;
+  for(const [mid,k] of Object.entries(sel)){const m=W.moves[mid]; if(!m||k<=0) continue; for(const [sid,arr] of Object.entries(m.dr)) for(const v of arr) level[sid]=(sid in level?level[sid]:1)-v*k;}
+  for(const k in level) level[k]=Math.min(1,Math.max(0,level[k])); return level;}
+const NONEURO=['UK','SE','CH','NO','DK','JP','KR','MX','BR','ZA'];
+function supMine(sid,c){const i=sid.indexOf(':'); const sc=i<0?sid:sid.slice(i+1); if(sc===c) return true; if(!NONEURO.includes(c)&&sc==='ECB') return true; if(c==='UK'&&(sid==='COLL'||sid==='FED')) return true; if(!NONEURO.includes(c)&&(sid==='ECB'||sid==='ESM')) return true; return false;}
+/* ---------- map (port of view_world.cpp) ---------- */
+const LAST={R:{},by:{},lv:{},eff:{}};
+const MAPD=T.map, ORIGIN={'EN-1':'SA','EN-2':'SA','EN-3':'RU','EN-4':'RU','EN-5':'IR','EN-6':'IR','EN-7':'CN','EN-8':'US','EU-1':'GB','EU-2':'GB','EU-3':'FR','EU-4':'EU','EU-5':'EU','EU-6':'EU','EU-7':'EU','EU-8':'IT','EU-9':'DE','EU-10':'BE','EU-11':'FI','EU-12':'SE','EU-13':'GB','EU-14':'GB','EU-15':'FR','EU-16':'ES','EU-17':'BE','EU-18':'GB','EU-19':'DE','EU-20':'IT','TR-1a':'US','TR-1b':'US','TR-2a':'US','TR-2b':'US','TR-3a':'US','TR-3b':'US','TR-3c':'US','TR-4a':'CN','TR-4b':'EU','TR-5a':'US','TR-5b':'EU','TR-6a':'JP','TR-6b':'JP'};
+const EUPOS=[-13.5,47], FIX={FR:[2.5,46.8],US:[-90,39],RU:[40,56],NO:[9,61]};
+const iso=c=>c==='UK'?'GB':c, code=i=>i==='GB'?'UK':i;
+const V={lon0:-25,lon1:48,lat0:33,lat1:71.5}; const cv=$('map'), wrap=$('mapwrap'); let CW=0,CH=0,HOV=null;
+const col=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function size(){const w=wrap.clientWidth, h=Math.max(320,Math.min(640,w*0.78)); const d=window.devicePixelRatio||1; cv.width=w*d; cv.height=h*d; cv.style.height=h+'px'; CW=w; CH=h; const c=cv.getContext('2d'); c.setTransform(d,0,0,d,0,0);}
+function proj(){const kx=CW/(V.lon1-V.lon0), ky=kx*1.55, latc=(V.lat0+V.lat1)/2; return {P:(lon,lat)=>[(lon-V.lon0)*kx, CH/2-(lat-latc)*ky], inv:(x,y)=>[V.lon0+x/kx, latc-(y-CH/2)/ky]};}
+function pos(c){const {P}=proj(); if(c==='EU') return P(...EUPOS); if(FIX[iso(c)]) return P(...FIX[iso(c)]); const m=MAPD.find(m=>m.iso===iso(c)); return m?P(m.lon,m.lat):null;}
+function inRing(r,x,y){let ins=false; for(let i=0,j=r.length-1;i<r.length;j=i++){const [xi,yi]=r[i],[xj,yj]=r[j]; if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi+1e-9)+xi)) ins=!ins;} return ins;}
+function countryAt(px,py){const {inv,P}=proj(); const e=P(...EUPOS); if(Math.hypot(px-e[0],py-e[1])<20) return 'EU'; const [lon,lat]=inv(px,py); for(const m of MAPD){ if(!W.countries[code(m.iso)]) continue; if(m.r.some(r=>inRing(r,lon,lat))) return code(m.iso);} return null;}
+let tAnim=0, raf=null; const RM=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function drawMap(t){
+  if(!CW) size(); const c=cv.getContext('2d'), {P}=proj(); const by=LAST.by;
+  c.fillStyle=col('--sea'); c.fillRect(0,0,CW,CH);
+  c.strokeStyle=col('--rule'); c.globalAlpha=.35; c.lineWidth=1; for(let lon=-180;lon<=180;lon+=10){const a=P(lon,-80),b=P(lon,85); c.beginPath(); c.moveTo(...a); c.lineTo(...b); c.stroke();} for(let lat=-80;lat<=80;lat+=10){const a=P(-180,lat),b=P(180,lat); c.beginPath(); c.moveTo(...a); c.lineTo(...b); c.stroke();} c.globalAlpha=1;
+  for(const m of MAPD){ const cd=code(m.iso), g=W.countries[cd], x=by[cd];
+    let fill=col('--land'), a=1; if(g&&x){ if(x.b){fill=col('--down'); a=0.45+0.5*Math.min(1,x.b/x.n*3);} else if(x.p){fill=col('--press'); a=0.6;} else fill=col('--hold'); }
+    c.beginPath(); for(const r of m.r){ r.forEach((p,i)=>{const q=P(p[0],p[1]); i?c.lineTo(...q):c.moveTo(...q);}); c.closePath(); }
+    c.globalAlpha=a*(HOV===cd&&g?0.85:1); c.fillStyle=fill; c.fill('evenodd'); c.globalAlpha=1;
+    c.lineWidth=cd===CUR&&g?2.4:0.7; c.strokeStyle=cd===CUR&&g?col('--accent'):col('--edge'); c.stroke(); }
+  { const e=P(...EUPOS), x=by.EU; c.beginPath(); c.arc(e[0],e[1],20,0,7); c.fillStyle=x&&x.b?col('--down'):x&&x.p?col('--press'):col('--hold'); c.fill(); c.lineWidth=CUR==='EU'?2.4:1.2; c.strokeStyle=CUR==='EU'?col('--accent'):col('--edge'); c.stroke(); c.fillStyle=col('--ink'); c.font='600 13px Inter, sans-serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillText('EU',e[0],e[1]); }
+  const tt=(t||0)/1000;
+  for(const [id,k] of Object.entries(SEL)){ const m=W.moves[id]; const a=pos(ORIGIN[id]==='GB'?'UK':ORIGIN[id]); if(!a) continue;
+    const cl=m.relief?col('--up'):id.startsWith('EN')?col('--alt'):id.startsWith('EU')?col('--violet'):col('--accent');
+    c.fillStyle=cl; c.beginPath(); c.arc(a[0],a[1],6,0,7); c.fill(); c.font='600 12px "IBM Plex Mono", monospace'; c.textAlign='left'; c.fillText(id,a[0]+8,a[1]-12);
+    for(const h of m.hit||[]){ const b=pos(h); if(!b||Math.hypot(b[0]-a[0],b[1]-a[1])<8) continue; const L=Math.hypot(b[0]-a[0],b[1]-a[1]); const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2-0.18*L];
+      c.globalAlpha=.55; c.strokeStyle=cl; c.lineWidth=1.2+1.3*k; c.beginPath(); c.moveTo(...a); c.quadraticCurveTo(mid[0],mid[1],b[0],b[1]); c.stroke(); c.globalAlpha=1;
+      if(!RM) for(let d=0;d<3;d++){ let hsh=0; for(const ch of id+h) hsh=(hsh*31+ch.charCodeAt(0))%97; const u=((tt*0.35+d/3+hsh/97)%1); const q=[(1-u)*(1-u)*a[0]+2*(1-u)*u*mid[0]+u*u*b[0],(1-u)*(1-u)*a[1]+2*(1-u)*u*mid[1]+u*u*b[1]]; c.beginPath(); c.arc(q[0],q[1],2.6,0,7); c.fill(); }
+      const dx=b[0]-mid[0], dy=b[1]-mid[1], dl=Math.hypot(dx,dy), ux=dx/dl, uy=dy/dl, tip=[b[0]-ux*4,b[1]-uy*4]; c.beginPath(); c.moveTo(...tip); c.lineTo(tip[0]-ux*10-uy*5,tip[1]-uy*10+ux*5); c.lineTo(tip[0]-ux*10+uy*5,tip[1]-uy*10-ux*5); c.closePath(); c.fill(); } }
+  c.font='600 11.5px "IBM Plex Mono", monospace'; c.textAlign='center'; c.textBaseline='middle';
+  for(const cd of Object.keys(W.countries)){ if(cd==='EU') continue; const p=pos(cd), x=by[cd]; if(!p||!x) continue; const lab=cd+(x.b?'  '+x.b+'/'+x.n:''); const w=c.measureText(lab).width+8;
+    c.fillStyle=col('--sheet'); c.globalAlpha=.85; c.fillRect(p[0]-w/2,p[1]-9,w,18); c.globalAlpha=1; c.fillStyle=x.b?col('--down'):col('--ink'); c.fillText(lab,p[0],p[1]); }
+  if(Object.keys(SEL).length&&!RM){ cancelAnimationFrame(raf); raf=requestAnimationFrame(drawMap); }
+}
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag={x:e.offsetX,y:e.offsetY,moved:false}; cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{ if(drag){ const dx=e.offsetX-drag.x, dy=e.offsetY-drag.y; if(Math.abs(dx)+Math.abs(dy)>3) drag.moved=true; if(drag.moved){ const kx=CW/(V.lon1-V.lon0), ky=kx*1.55; V.lon0-=dx/kx; V.lon1-=dx/kx; V.lat0+=dy/ky; V.lat1+=dy/ky; drag.x=e.offsetX; drag.y=e.offsetY; drawMap(); } return; }
+  const cd=countryAt(e.offsetX,e.offsetY); if(cd!==HOV){HOV=cd; drawMap();} const tip=$('tip');
+  if(cd){ const x=LAST.by[cd]||{n:0,b:0,p:0}; const bad=Object.entries(LAST.R).filter(([w,r])=>W.walls[w].c===cd&&r.s>0).sort((a,b)=>b[1].s-a[1].s).slice(0,4);
+    tip.innerHTML=`<b>${esc(W.countries[cd])}</b>${x.n} walls: ${x.b} broken, ${x.p} under pressure${bad.map(([w,r])=>`<div style="color:${r.s===2?'var(--down)':'var(--press)'}">• ${esc(W.walls[w].n)}</div>`).join('')}<div class="muted">Click to see all walls</div>`;
+    tip.hidden=false; tip.style.left=Math.max(4,Math.min(e.offsetX+14,CW-tip.offsetWidth-6))+'px'; tip.style.top=(e.offsetY+14)+'px'; } else tip.hidden=true; });
+cv.addEventListener('pointerup',e=>{ const d=drag; drag=null; if(d&&!d.moved){ const cd=countryAt(e.offsetX,e.offsetY); if(cd){CUR=cd; renderGame();} } });
+cv.addEventListener('pointerleave',()=>{ $('tip').hidden=true; if(HOV){HOV=null; drawMap();} });
+cv.addEventListener('wheel',e=>{ e.preventDefault(); const {inv}=proj(); const [gx,gy]=inv(e.offsetX,e.offsetY); const f=e.deltaY<0?0.85:1.18; V.lon0=gx-(gx-V.lon0)*f; V.lon1=gx+(V.lon1-gx)*f; V.lat0=gy-(gy-V.lat0)*f; V.lat1=gy+(V.lat1-gy)*f; drawMap(); },{passive:false});
+$('vEU').onclick=()=>{Object.assign(V,{lon0:-25,lon1:48,lat0:33,lat1:71.5}); drawMap();};
+$('vW').onclick=()=>{Object.assign(V,{lon0:-125,lon1:150,lat0:-45,lat1:75}); drawMap();};
+window.addEventListener('resize',()=>{size(); drawMap();});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>drawMap());
+size();
 renderMoves(); renderGame();
 
 /* ---------- companies ---------- */
