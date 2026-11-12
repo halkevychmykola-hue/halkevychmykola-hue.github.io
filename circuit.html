@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Circuit-1 Replay</title>
+<meta name="description" content="Interactive 2022 replay of the Circuit-1 commodity protocol: every trade, my decisions against rule-based entry and exit, the event lifecycle and the risk calculator.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: replay console — mode switch, cumulative-R chart, trade table with expandable rows; then year view, lifecycle stepper and risk calculator */
+:root{
+  --bg:#F3F5F7; --sheet:#FFFFFF; --ink:#141A21; --muted:#56616D; --rule:#D5DBE1; --tint:#E8EDF2;
+  --accent:#1F5B8F; --accent-soft:#DDE8F3; --up:#1E7A4C; --down:#B03A2E; --alt:#B07A12;
+  --f-disp:"Archivo","Arial Narrow",Arial,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);margin:0}
+.wrap{max-width:1100px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:40px}
+a{color:var(--accent)}
+h1,h2,h3{font-family:var(--f-disp);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800;line-height:1.05}
+h2{font-size:clamp(22px,3.4vw,28px);font-weight:800}
+h3{font-size:17px;font-weight:700}
+p{margin:0;max-width:72ch}
+.eyebrow{font:500 12px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.back{font:500 13px var(--f-mono);text-decoration:none}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:16px;min-width:0}
+.note{border-left:4px solid var(--alt);background:var(--sheet);border-radius:0 8px 8px 0;padding:12px 14px;font-size:14px}
+button{font:inherit;color:inherit}
+.pill{font:500 12.5px var(--f-mono);border:1px solid var(--rule);background:var(--sheet);padding:7px 11px;border-radius:4px;cursor:pointer;text-align:left}
+.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+.pill:focus-visible,input:focus-visible,tr[tabindex]:focus-visible,.stage:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.st{border:1px solid var(--rule);border-radius:6px;padding:8px 10px;background:var(--sheet)}
+.st .v{font:600 20px var(--f-mono);font-variant-numeric:tabular-nums}
+.st .k{font-size:11.5px;color:var(--muted)}
+.chart svg{width:100%;height:auto;display:block}
+svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+svg .lbl{fill:var(--ink);font-family:var(--f-body);font-size:12.5px}
+svg .grid{stroke:var(--rule)} svg .zero{stroke:var(--muted)}
+svg .ln{fill:none;stroke:var(--accent);stroke-width:2.2} svg .ln2{fill:none;stroke:var(--alt);stroke-width:1.6;stroke-dasharray:5 3}
+svg .bp{fill:var(--up)} svg .bn{fill:var(--down)} svg .dot{fill:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;margin-right:6px;vertical-align:3px}
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--tint)}
+td.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr[tabindex]{cursor:pointer} tr[tabindex]:hover{background:var(--tint)}
+tr.det td{background:var(--tint);font-size:13px}
+.pos{color:var(--up)} .neg{color:var(--down)}
+.chip{display:inline-block;font:500 11px var(--f-mono);padding:1px 6px;border-radius:3px;border:1px solid currentColor;white-space:nowrap}
+.life{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+@media (max-width:700px){.life{grid-template-columns:1fr}}
+.stage{border:1px solid var(--rule);background:var(--sheet);border-radius:6px;padding:10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.stage .n{font:600 12px var(--f-mono);color:var(--muted)}
+.stage.ok{border-top:4px solid var(--up)} .stage.no{border-top:4px solid var(--rule)} .stage.exit{border-top:4px solid var(--down)}
+.stage[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--accent)}
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.calc label{display:flex;flex-direction:column;gap:4px;font-size:13px}
+.calc input{font:500 14px var(--f-mono);padding:7px 9px;border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--ink)}
+ul.facts{margin:0;padding-left:20px} ul.facts li{margin:5px 0;max-width:72ch}
+footer{font-size:13px;border-top:1px solid var(--rule);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="stack">
+    <a class="back" href="index.html#circuit">← Back to all projects</a>
+    <div class="eyebrow">Project 03 · Circuit-1 · interactive replay</div>
+    <h1>Circuit-1: the 2022 replay</h1>
+    <p>I traded 2022 again, week by week, without knowing the future. A cursor moved through the year, I only saw facts dated on or before it, and I made every decision myself. Afterwards an engine replayed the same trades on minute data under the rules I wrote later (protocol v2), so I could see where my results came from.</p>
+    <div class="note">Results in R: 1R is the amount risked on one idea, set from volatility (daily volatility over 63 sessions × √T). The engine reproduces my journal to within about 0.01R per trade. The v2 rules were written after these trades, so the rule-based numbers are in-sample: they show where the money was lost, they do not prove an edge.</div>
+  </header>
+
+  <section class="stack">
+    <div class="eyebrow">January–August 2022 · 30 trades</div>
+    <h2>My decisions against the rules</h2>
+    <div class="opts" id="modes"></div>
+    <div class="sum" id="rsum"></div>
+    <div class="panel chart" id="rchart"></div>
+    <p class="muted" style="font-size:13.5px">Click a trade to see why the entry rules accepted or rejected it and how the rule-based exit worked.</p>
+    <div class="tw"><table id="trades"></table></div>
+  </section>
+
+  <section class="stack">
+    <div class="eyebrow">Full year 2022 · 35 trades</div>
+    <h2>Month by month</h2>
+    <div class="panel chart" id="ychart"></div>
+    <div class="sum">
+      <div class="st"><div class="v pos">+2.24R</div><div class="k">2022 total, 35 trades</div></div>
+      <div class="st"><div class="v">≈ 0.3</div><div class="k">t-statistic: no proven edge</div></div>
+      <div class="st"><div class="v neg">−5.25R</div><div class="k">worst drawdown (Jan–May)</div></div>
+      <div class="st"><div class="v">0</div><div class="k">protocol breaches from June</div></div>
+    </div>
+    <div class="panel chart" id="dchart"></div>
+  </section>
+
+  <section class="stack">
+    <div class="eyebrow">Geo-driver protocol v3</div>
+    <h2>Event lifecycle: when entry is allowed</h2>
+    <p class="muted">Every supply shock moves through five stages. Entry is allowed only at stages 2–3; adaptation means exit. Click a stage.</p>
+    <div class="life" id="life"></div>
+    <div class="panel" id="lifeText"></div>
+  </section>
+
+  <section class="stack">
+    <div class="eyebrow">Risk rules</div>
+    <h2>Position-size calculator</h2>
+    <p class="muted">One event is one idea and one unit of risk. 1R = daily volatility × √T × entry price, the stop sits at −1R, the monthly loss limit is −1R, and at most two events can be open at once.</p>
+    <div class="panel stack">
+      <div class="calc">
+        <label for="cAcc">Account size, £<input id="cAcc" type="number" value="50000" min="0" step="1000"></label>
+        <label for="cRisk">Risk per idea, % of account<input id="cRisk" type="number" value="2" min="0" step="0.5"></label>
+        <label for="cVol">Daily volatility (63 sessions), %<input id="cVol" type="number" value="2.4" min="0" step="0.1"></label>
+        <label for="cT">Holding horizon T, sessions<input id="cT" type="number" value="20" min="1" step="1"></label>
+        <label for="cPx">Entry price<input id="cPx" type="number" value="90" min="0" step="0.5"></label>
+        <label for="cMult">Contract multiplier (£ per point)<input id="cMult" type="number" value="100" min="0" step="1"></label>
+      </div>
+      <div class="sum" id="cout"></div>
+      <p class="muted" style="font-size:13px">Example values only: a micro crude-oil contract (100 barrels) at $90 with 2.4% daily volatility, treated as £ for simplicity. Change any input.</p>
+    </div>
+  </section>
+
+  <section class="stack">
+    <div class="eyebrow">Retrospective 2010–2022</div>
+    <h2>Geopolitical supply shocks, tested in hindsight</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Test</th><th class="n">Trades</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Commodities, strong supply channel</td><td class="n">47</td><td class="pos">+31.5R (+0.67R per trade)</td></tr>
+        <tr><td>Weak channel (country with a small supply share)</td><td class="n">28</td><td>+0.07R per trade</td></tr>
+        <tr><td>Trading on data releases (EIA, CPI, WASDE), 2022 replay</td><td class="n">16</td><td>+0.10R per trade</td></tr>
+        <tr><td>"Fear" trades in yen, Swiss franc, short AUD</td><td class="n">52</td><td class="neg">−24.3R, dropped</td></tr>
+        <tr><td>One idea per event, strong channel</td><td class="n">19 ideas</td><td>+9.14R; +2.44R without the 2020 oil price war; −0.57R without 2020 and Ukraine 2022</td></tr>
+      </tbody></table></div>
+    <p class="muted">The edge rests on a few very large events and is not statistically proven (t ≈ 1.2). The event list was assembled in hindsight, so the next test is a blind radar in replay and forward paper trading.</p>
+  </section>
+
+  <section class="stack">
+    <div class="eyebrow">Pre-registered tests, 2010–2022</div>
+    <h2>What I tested and rejected</h2>
+    <ul class="facts">
+      <li>Driver variables give no out-of-sample direction (information coefficient ≈ 0).</li>
+      <li>The level of the supply–demand balance does not predict direction; the sign of the reaction to a report is right in 59–75% of cases.</li>
+      <li>After the first day, a shock is a coin flip. Sanctions and policy drift for up to 60 days. An expected shock is sold on the fact.</li>
+      <li>News enters the price on the day it comes out. What matters is matching the holding period to the catalyst; breakeven stops and trailing do not help.</li>
+      <li>Mechanical entry after the USDA WASDE report: rejected. Weekly EIA data adds about +0.03R. On CPI, payrolls and FOMC only gold passes.</li>
+      <li>Option overlays, a bubble detector (BSADF), straddles after a crash, holding longer, forced-seller trades (t 1.63): none passed the pre-registered rule.</li>
+    </ul>
+  </section>
+
+  <footer class="muted">Research, not trading results. <a href="index.html">Mykola Halkevych</a> · <a href="https://github.com/halkevychmykola-hue">GitHub</a></footer>
+</div>
+
+<script src="circuit_data.js"></script>
+<script>
+(function(){
+const D=window.C1, $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fR=x=>(x>0?'+':x<0?'−':'')+Math.abs(x).toFixed(2)+'R';
+const MODES={j:['My decisions',t=>t.j],x:['Rule-based exits only',t=>t.xo==null?0:t.xo],g:['Rule-based entry only',t=>t.go],v:['Entry + exit rules',t=>t.v2]};
+let M='j', OPEN=null;
+$('modes').innerHTML=Object.entries(MODES).map(([k,[l]])=>`<button class="pill" data-m="${k}" aria-pressed="${k===M}">${l}</button>`).join('');
+$('modes').querySelectorAll('button').forEach(b=>b.onclick=()=>{M=b.dataset.m;$('modes').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.m===M)));render();});
+function cumChart(vals,ref){
+  const Wd=720,H=240,L=46,R=12,T=12,B=26, n=vals.length; let c=0; const a=vals.map(v=>c+=v); c=0; const b=ref.map(v=>c+=v);
+  let lo=Math.min(0,...a,...b), hi=Math.max(0.5,...a,...b); const pad=(hi-lo)*0.08; lo-=pad; hi+=pad;
+  const X=i=>L+(i+1)/n*(Wd-L-R), Y=v=>T+(hi-v)/(hi-lo)*(H-T-B);
+  let g=''; const step=hi-lo>8?2:1; for(let v=Math.ceil(lo/step)*step; v<=hi; v+=step) g+=`<line class="grid" x1="${L}" x2="${Wd-R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text x="${L-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${v}R</text>`;
+  const months=[...new Set(D.map(t=>t.m))]; let xt=''; months.forEach(m=>{const i=D.findIndex(t=>t.m===m); xt+=`<text x="${X(i-0.5).toFixed(1)}" y="${H-8}">${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug'][+m.slice(5)-1]}</text>`;});
+  const P=arr=>`M${L},${Y(0).toFixed(1)}`+arr.map((v,i)=>`L${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join('');
+  return `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Cumulative R by trade">${g}<line class="zero" x1="${L}" x2="${Wd-R}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"/>${xt}<path class="ln2" d="${P(b)}"/><path class="ln" d="${P(a)}"/>${a.map((v,i)=>`<circle class="dot" cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.5"/>`).join('')}</svg>`;
+}
+function render(){
+  const f=MODES[M][1], vals=D.map(f), ref=D.map(t=>t.j);
+  const taken=M==='g'||M==='v'?D.filter(t=>t.g):D, sum=vals.reduce((s,v)=>s+v,0);
+  const wins=taken.filter(t=>f(t)>0).length; let c=0,pk=0,dd=0; vals.forEach(v=>{c+=v;pk=Math.max(pk,c);dd=Math.min(dd,c-pk);});
+  $('rsum').innerHTML=`<div class="st"><div class="v ${sum>=0?'pos':'neg'}">${fR(sum)}</div><div class="k">${MODES[M][0].toLowerCase()}</div></div><div class="st"><div class="v">${taken.length}</div><div class="k">trades taken</div></div><div class="st"><div class="v">${Math.round(wins/taken.length*100)}%</div><div class="k">winning trades</div></div><div class="st"><div class="v neg">${fR(dd)}</div><div class="k">max drawdown</div></div>`;
+  $('rchart').innerHTML=cumChart(vals,ref)+`<div class="legend"><span><i style="background:var(--accent)"></i>${MODES[M][0]}, cumulative R</span><span><i style="background:var(--alt)"></i>my decisions (journal)</span></div>`;
+  $('trades').innerHTML=`<thead><tr><th>#</th><th>Month</th><th>Market</th><th>Side</th><th>Entry rules</th><th class="n">Mine</th><th class="n">${M==='j'?'Result':esc(MODES[M][0])}</th></tr></thead><tbody>`+D.map(t=>{
+    const v=f(t); return `<tr tabindex="0" data-id="${t.id}"><td class="n">${t.id}</td><td>${t.m}</td><td>${esc(t.mk)} <span class="muted" style="font:11px var(--f-mono)">${esc(t.c)}</span></td><td>${t.side}</td><td>${t.g?'<span class="chip pos">pass</span>':'<span class="chip neg">reject</span>'}</td><td class="n ${t.j>0?'pos':t.j<0?'neg':''}">${fR(t.j)}</td><td class="n ${v>0?'pos':v<0?'neg':''}">${fR(v)}</td></tr>`+
+    (OPEN===t.id?`<tr class="det"><td></td><td colspan="6"><b>${t.g?'Passed':'Rejected'}:</b> ${esc(t.gr)}<br><b>Rule-based exit:</b> ${esc(t.ex)}${t.nt?` (${esc(t.nt)})`:''} · class ${t.cls}</td></tr>`:'');}).join('')+'</tbody>';
+  $('trades').querySelectorAll('tr[tabindex]').forEach(r=>{const go=()=>{const id=+r.dataset.id;OPEN=OPEN===id?null:id;render();}; r.onclick=go; r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+}
+render();
+/* year view */
+const YM=[['Jan',9,1.70],['Feb',5,0.12],['Mar',4,-1.91],['Apr',6,2.71],['May',4,-1.41],['Jun',1,-0.80],['Jul',0,0],['Aug',1,0.93],['Sep',1,0.44],['Oct',2,1.65],['Nov',2,-1.19],['Dec',0,0]];
+(function(){const Wd=720,H=200,L=46,R=12,T=12,B=40,lo=-2.5,hi=3, Y=v=>T+(hi-v)/(hi-lo)*(H-T-B), bw=(Wd-L-R)/12; let s='';
+ [-2,-1,0,1,2,3].forEach(v=>s+=`<line class="${v?'grid':'zero'}" x1="${L}" x2="${Wd-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${v}R</text>`);
+ YM.forEach(([m,n,r],i)=>{const x=L+i*bw+bw*0.2,w=bw*0.6; s+=`<rect class="${r>=0?'bp':'bn'}" x="${x}" y="${Y(Math.max(r,0))}" width="${w}" height="${Math.max(Math.abs(Y(r)-Y(0)),1)}"><title>${m}: ${r}R, ${n} trades</title></rect><text class="lbl" x="${x+w/2}" y="${H-22}" text-anchor="middle">${m}</text><text x="${x+w/2}" y="${H-8}" text-anchor="middle">${n}</text>`;});
+ $('ychart').innerHTML=`<div class="eyebrow" style="margin-bottom:6px">R per month (number of trades below). Protocol v1 from June; September onwards run on the c1m machine</div><svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="R per month in 2022">${s}</svg>`;})();
+(function(){const rows=[['Geopolitical driver',9,3.57],['Numeric driver (reports, balances)',16,1.59],['No named driver',10,-2.93]]; const Wd=720,H=150,L=250,R=60,zero=L+150/7*3*1.1; const sc=(Wd-L-R)/7.2, X=v=>L+(v+3)*sc; let s='';
+ [-2,0,2,4].forEach(v=>s+=`<line class="${v?'grid':'zero'}" x1="${X(v)}" x2="${X(v)}" y1="6" y2="${H-24}"/><text x="${X(v)}" y="${H-8}" text-anchor="middle">${v>0?'+':''}${v}R</text>`);
+ rows.forEach(([l,n,r],i)=>{const y=12+i*40; s+=`<text class="lbl" x="0" y="${y+18}">${l} (${n})</text><rect class="${r>=0?'bp':'bn'}" x="${Math.min(X(0),X(r))}" y="${y}" width="${Math.abs(X(r)-X(0))}" height="26"/><text x="${r>=0?X(r)+6:X(0)+6}" y="${y+18}">${r>0?'+':''}${r}R</text>`;});
+ $('dchart').innerHTML=`<div class="eyebrow" style="margin-bottom:6px">2022 by type of driver: why the protocol moved to geopolitical events</div><svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="R by driver type">${s}</svg>`;})();
+/* lifecycle */
+const ST=[['Threat','no','A risk is talked about but nothing has a date: a war threat, a sanctions debate. No entry: the market prices noise, and most threats never happen.'],
+ ['Dated mechanism','ok','A date and a mechanism appear: sanctions start on a given day, an export ban is signed. Entry allowed if the 5-question severity test passes (what physically breaks and how much; is there a dated mechanism; who replaces the supply and how fast; what will show it has faded; which market expresses it most cleanly).'],
+ ['Disruption','ok','Physical flows actually stop. Entry still allowed; size by 1R and keep a stop at −1R. Example: in 2022 diesel expressed the Russia shock more cleanly than crude.'],
+ ['Adaptation','exit','Buyers find other suppliers, routes change, prices of substitutes adjust. This is the exit signal, even if the headline is still loud.'],
+ ['Normalisation','no','Flows are back to a new normal. No position. Record the event in the decision journal, including the ideas I rejected.']];
+let SI=1;
+function renderLife(){ $('life').innerHTML=ST.map(([n,c],i)=>`<button class="stage ${c}" aria-pressed="${i===SI}" data-i="${i}"><span class="n">Stage ${i+1}</span><b>${n}</b><span class="muted" style="font-size:12px">${c==='ok'?'entry allowed':c==='exit'?'exit':'no entry'}</span></button>`).join('');
+ $('life').querySelectorAll('.stage').forEach(b=>b.onclick=()=>{SI=+b.dataset.i;renderLife();}); $('lifeText').innerHTML=`<h3>Stage ${SI+1}: ${ST[SI][0]}</h3><p style="margin-top:6px">${ST[SI][2]}</p>`; }
+renderLife();
+/* calculator */
+function calc(){ const g=id=>+$(id).value||0; const acc=g('cAcc'),risk=g('cRisk')/100,vol=g('cVol')/100,T=g('cT'),px=g('cPx'),mult=g('cMult');
+ const oneR=vol*Math.sqrt(T)*px, perC=oneR*mult, budget=acc*risk, n=perC>0?Math.floor(budget/perC):0;
+ $('cout').innerHTML=`<div class="st"><div class="v">${oneR.toFixed(2)}</div><div class="k">1R in price points</div></div><div class="st"><div class="v">£${Math.round(perC).toLocaleString('en-GB')}</div><div class="k">1R per contract</div></div><div class="st"><div class="v">£${Math.round(budget).toLocaleString('en-GB')}</div><div class="k">risk budget for this idea</div></div><div class="st"><div class="v">${n}</div><div class="k">contracts (rounded down)${n===0&&perC>0?': too large, use a mini contract':''}</div></div><div class="st"><div class="v">${(px-oneR).toFixed(2)}</div><div class="k">stop for a long at −1R</div></div>`; }
+['cAcc','cRisk','cVol','cT','cPx','cMult'].forEach(id=>$(id).oninput=calc); calc();
+})();
+</script>
+</body>
+</html>

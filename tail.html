@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tail Model Explorer</title>
+<meta name="description" content="Interactive Tail model: a Colonel Blotto game over 358 financial-system defences in 21 jurisdictions, and distress probabilities with fault trees for 48 UK companies.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: two working tools stacked — the global game (shocks → country tiles → walls) and the company explorer (list → ladder → fault tree) */
+:root{
+  --bg:#F3F5F7; --sheet:#FFFFFF; --ink:#141A21; --muted:#56616D; --rule:#D5DBE1; --tint:#E8EDF2;
+  --accent:#1F5B8F; --accent-soft:#DDE8F3; --up:#1E7A4C; --down:#B03A2E; --alt:#B07A12; --press:#C98A12;
+  --f-disp:"Archivo","Arial Narrow",Arial,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; --press:#E3B24F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; --press:#E3B24F; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:40px}
+a{color:var(--accent)}
+h1,h2,h3{font-family:var(--f-disp);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800;line-height:1.05}
+h2{font-size:clamp(22px,3.4vw,28px);font-weight:800}
+h3{font-size:17px;font-weight:700}
+p{margin:0;max-width:72ch}
+.eyebrow{font:500 12px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.back{font:500 13px var(--f-mono);text-decoration:none}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:16px;min-width:0}
+.note{border-left:4px solid var(--alt);background:var(--sheet);border-radius:0 8px 8px 0;padding:12px 14px;font-size:14px}
+button{font:inherit;color:inherit}
+.pill{font:500 12.5px var(--f-mono);border:1px solid var(--rule);background:var(--sheet);padding:6px 10px;border-radius:4px;cursor:pointer}
+.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+.pill:focus-visible,.tile:focus-visible,.row:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.opts{display:flex;flex-wrap:wrap;gap:4px}
+.game{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.game{grid-template-columns:1fr}}
+.moves{max-height:640px;overflow:auto;border:1px solid var(--rule);border-radius:8px;background:var(--sheet)}
+.mgrp{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:10px 12px 4px}
+.mv{display:grid;grid-template-columns:22px 1fr;gap:6px 8px;padding:7px 12px;border-top:1px solid var(--rule);font-size:13.5px}
+.mv label{cursor:pointer}
+.mv .who{font-size:12px;color:var(--muted)}
+.mv input[type=range]{grid-column:2;width:100%;accent-color:var(--accent)}
+.mv .tag{font:500 10.5px var(--f-mono);color:var(--up)}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.st{border:1px solid var(--rule);border-radius:6px;padding:8px 10px;background:var(--sheet)}
+.st .v{font:600 20px var(--f-mono);font-variant-numeric:tabular-nums}
+.st .k{font-size:11.5px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.tile{display:flex;flex-direction:column;gap:6px;text-align:left;border:1px solid var(--rule);background:var(--sheet);border-radius:6px;padding:10px;cursor:pointer}
+.tile[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.tile .nm{font-weight:600;font-size:14px}
+.tile .cnt{font:500 11.5px var(--f-mono);color:var(--muted)}
+.bar{display:flex;height:8px;border-radius:2px;overflow:hidden;background:var(--tint)}
+.bar i{display:block;height:100%}
+.b-br{background:var(--down)} .b-pr{background:var(--press)} .b-ok{background:var(--up);opacity:.55}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--tint)}
+td.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.s{font:500 11px var(--f-mono);padding:2px 6px;border-radius:3px;white-space:nowrap}
+.s-br{background:var(--down);color:var(--sheet)} .s-pr{background:var(--press);color:var(--sheet)} .s-ok{border:1px solid var(--up);color:var(--up)}
+.cx{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.cx{grid-template-columns:1fr}}
+.list{max-height:820px;overflow:auto;border:1px solid var(--rule);border-radius:8px;background:var(--sheet)}
+.row{display:grid;grid-template-columns:1fr auto;gap:8px;width:100%;align-items:center;padding:8px 12px;border:0;border-bottom:1px solid var(--rule);background:transparent;text-align:left;cursor:pointer}
+.row:hover{background:var(--tint)} .row[aria-current="true"]{background:var(--accent-soft)}
+.row .nm{font-size:13.5px;font-weight:500;line-height:1.3}
+.row .sub{font:400 11px var(--f-mono);color:var(--muted)}
+.row .pv{font:600 13px var(--f-mono)}
+.detail{display:flex;flex-direction:column;gap:16px}
+.chart svg{width:100%;height:auto;display:block}
+svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+svg .lbl{fill:var(--ink);font-family:var(--f-body);font-size:12.5px}
+svg .grid{stroke:var(--rule)} svg .ba{fill:var(--accent)} svg .bq{fill:var(--alt)}
+svg .ln{fill:none;stroke:var(--accent);stroke-width:2} svg .ref{stroke:var(--muted);stroke-dasharray:4 3}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+ul.kv{margin:0;padding-left:18px;font-size:13.5px} ul.kv li{margin:3px 0}
+.tree{font-size:13.5px}
+.tree details{margin-left:14px;border-left:1px solid var(--rule);padding-left:10px}
+.tree > details{margin-left:0;border-left:0;padding-left:0}
+.tree summary{cursor:pointer;padding:3px 0;list-style-position:outside}
+.tree .leaf{margin-left:14px;border-left:1px solid var(--rule);padding:4px 0 4px 10px}
+.gate{display:inline-block;font:600 10.5px var(--f-mono);padding:1px 5px;border-radius:3px;margin-right:6px;border:1px solid var(--accent);color:var(--accent)}
+.gate.and{border-color:var(--alt);color:var(--alt)}
+.pp{font:600 12px var(--f-mono);margin-left:6px}
+.src{font:500 10.5px var(--f-mono);color:var(--muted);margin-left:6px}
+.sen{display:block;font-size:12px;color:var(--muted)}
+footer{font-size:13px;border-top:1px solid var(--rule);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="stack">
+    <a class="back" href="index.html#tail">← Back to all projects</a>
+    <div class="eyebrow">Project 02 · Tail · interactive model</div>
+    <h1>Tail model explorer</h1>
+    <p>Two parts of the model, rebuilt for the browser from the original C++ desktop program. First, the global game: shocks drain shared supports and push on lines of defence, and a wall breaks when the push is stronger than its strength. Second, the company layer: for 48 UK listed companies, the probability of a large share-price fall, compared with what option prices imply, and the fault tree behind it.</p>
+    <div class="note">Model inputs collected on 7 Nov 2026; company results are the model's frozen run of 8 Nov 2026 with live market data. Several inputs are placeholders, so treat the numbers as a structured view of risk, not calibrated forecasts. This is not investment advice.</div>
+  </header>
+
+  <!-- ===== GLOBAL GAME ===== -->
+  <section class="stack" id="game">
+    <div class="eyebrow">Part 1 · Colonel Blotto over the financial system</div>
+    <h2>Which defences break under a shock?</h2>
+    <p class="muted">Pick one or more moves by other players and set their strength. Each wall's strength is its effort (1–3) reduced by the supports it relies on: budget room, central-bank balance sheet, collateral. Rule from Colonel Blotto: push greater than strength breaks the wall, a tie goes to the defender. A broken wall passes pressure on to the walls linked to it.</p>
+    <div class="opts" id="presets"></div>
+    <div class="game">
+      <div class="stack">
+        <label class="mono" style="font-size:12.5px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="beyond"> Only the part not yet priced by markets</label>
+        <div class="moves" id="moves"></div>
+      </div>
+      <div class="stack">
+        <div class="sum" id="gsum"></div>
+        <div class="legend"><span><i class="b-br"></i>broken</span><span><i class="b-pr"></i>under pressure (≥70% of strength)</span><span><i class="b-ok"></i>holds</span></div>
+        <div class="tiles" id="tiles"></div>
+        <div class="stack" id="cwalls"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== COMPANIES ===== -->
+  <section class="stack" id="cos">
+    <div class="eyebrow">Part 2 · Company layer</div>
+    <h2>Distress probabilities for 48 UK companies</h2>
+    <p class="muted">For each company: the model's probability that the share price touches −20%, −30%, −50% and −70% before the horizon, next to the probability implied by option prices (or by volatility when no options were available). Where the model sees much more risk than the market, puts may be mispriced. Below it, the fault tree: AND/OR logic from a shock to the forced step, with a probability, a source and a sensor on each basic event.</p>
+    <div class="opts" id="kinds"></div>
+    <div class="cx">
+      <div class="list" id="clist"></div>
+      <div class="panel detail" id="cdetail"></div>
+    </div>
+    <div class="panel stack">
+      <h3>Suggested portfolio in the frozen run</h3>
+      <p class="muted" style="font-size:14px">Only names where the model's probability beats the option price after a spread penalty get a size. Quarter-Kelly, capped at 5% per name and 10% in total.</p>
+      <div class="tw"><table id="port"></table></div>
+    </div>
+  </section>
+
+  <footer class="muted">Research, not investment advice. <a href="index.html">Mykola Halkevych</a> · <a href="https://github.com/halkevychmykola-hue">GitHub</a></footer>
+</div>
+
+<script src="tail_data.js"></script>
+<script>
+(function(){
+const T=window.TAIL, W=T.world;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=(x,d=1)=>(x*100).toFixed(d)+'%';
+
+/* ---------- game engine (port of game.cpp) ---------- */
+function play(sel){
+  const level={}, pressure={}, status={};
+  for(const k in W.sup) level[k]=W.sup[k].l0;
+  for(const [mid,k] of Object.entries(sel)){
+    const m=W.moves[mid]; if(!m||k<=0) continue;
+    for(const [sid,arr] of Object.entries(m.dr)) for(const v of arr){ level[sid]=(sid in level?level[sid]:1)-v*k; }
+    for(const [w,f] of Object.entries(m.h)) pressure[w]=(pressure[w]||0)+f*k;
+  }
+  for(const k in level) level[k]=Math.min(1,Math.max(0,level[k]));
+  const force=w=>{const d=W.walls[w]; let f=d.e; for(const [sid,wt] of d.d){const l=sid in level?level[sid]:1; f*=1-wt*(1-l);} return f;};
+  for(let it=0;it<6;it++){ let ch=false; const snap={...pressure};
+    for(const [w,p] of Object.entries(snap)){ if(!W.walls[w]) continue; if(p>force(w)+1e-9 && status[w]!==2){ status[w]=2; ch=true; for(const [a,b] of W.flows) if(a===w&&W.walls[b]) pressure[b]=(pressure[b]||0)+W.flow_force; } }
+    if(!ch) break; }
+  const res={};
+  for(const w in W.walls){ const f=force(w), p=pressure[w]||0; let s=status[w]===2?2:(p>0&&p>=W.pressured*f?1:0); res[w]={f,p,s}; }
+  return res;
+}
+/* ---------- move picker ---------- */
+const SEL={};
+const GROUPS=[['EN','Energy and geopolitics'],['EU','Europe and the UK: policy and politics'],['TR','Trade, the dollar and debt buyers']];
+function renderMoves(){
+  $('moves').innerHTML=GROUPS.map(([g,lab])=>`<div class="mgrp">${lab}</div>`+Object.entries(W.moves).filter(([k])=>k.startsWith(g)).map(([k,m])=>{
+    const on=k in SEL; const v=on?SEL[k]:1;
+    return `<div class="mv"><input type="checkbox" id="mv-${k}" data-k="${k}" ${on?'checked':''}><label for="mv-${k}"><b class="mono" style="font-size:11.5px">${k}</b> ${esc(m.m)}<div class="who">${esc(m.p)}${m.relief?' · <span class="tag">relief move</span>':''}${m.pm!=null?` · ${Math.round(m.pm*100)}% priced in`:''}</div></label>${on?`<input type="range" id="mvr-${k}" data-k="${k}" min="0.25" max="1.5" step="0.25" value="${v}" aria-label="Strength of ${k}"><span></span><span class="mono" style="font-size:11.5px;grid-column:2">strength ${v.toFixed(2)}</span>`:''}</div>`;}).join('')).join('');
+  $('moves').querySelectorAll('input[type=checkbox]').forEach(i=>i.onchange=()=>{ i.checked?SEL[i.dataset.k]=1:delete SEL[i.dataset.k]; renderMoves(); renderGame(); });
+  $('moves').querySelectorAll('input[type=range]').forEach(i=>i.oninput=()=>{ SEL[i.dataset.k]=+i.value; i.nextElementSibling.nextElementSibling.textContent='strength '+(+i.value).toFixed(2); renderGame(); });
+}
+const PRESETS={'Hormuz closed':{'EN-5':1},'Oil shock + ECB stays tight':{'EN-1':1,'EU-4':1},'Bond buyers step back':{'TR-6a':1},'Fed hikes + strong dollar':{'TR-3a':1},'Europe stress mix':{'EN-4':1,'EU-6':1,'EU-15':1},'Clear':{}};
+$('presets').innerHTML=Object.keys(PRESETS).map(k=>`<button class="pill" data-k="${k}">${k}</button>`).join('');
+$('presets').querySelectorAll('button').forEach(b=>b.onclick=()=>{ for(const k in SEL) delete SEL[k]; Object.assign(SEL,PRESETS[b.dataset.k]); renderMoves(); renderGame(); });
+$('beyond').onchange=()=>renderGame();
+let CUR='UK';
+function renderGame(){
+  const beyond=$('beyond').checked, eff={};
+  for(const [k,v] of Object.entries(SEL)){ const m=W.moves[k]; eff[k]=v*(beyond&&m.pm!=null?1-m.pm:1); }
+  const R=play(eff);
+  const by={}; for(const [w,r] of Object.entries(R)){ const c=W.walls[w].c; (by[c]=by[c]||{n:0,b:0,p:0}).n++; if(r.s===2) by[c].b++; else if(r.s===1) by[c].p++; }
+  const nb=Object.values(R).filter(r=>r.s===2).length, np=Object.values(R).filter(r=>r.s===1).length, nc=Object.values(by).filter(x=>x.b+x.p>0).length;
+  $('gsum').innerHTML=`<div class="st"><div class="v">${Object.keys(SEL).length}</div><div class="k">moves in play</div></div><div class="st"><div class="v" style="color:var(--down)">${nb}</div><div class="k">walls broken</div></div><div class="st"><div class="v" style="color:var(--press)">${np}</div><div class="k">under pressure</div></div><div class="st"><div class="v">${nc}</div><div class="k">jurisdictions hit</div></div>`;
+  $('tiles').innerHTML=Object.entries(W.countries).map(([c,nm])=>{const x=by[c]||{n:0,b:0,p:0}; const ok=x.n-x.b-x.p;
+    return `<button class="tile" data-c="${c}" aria-pressed="${c===CUR}"><span class="nm">${esc(nm)}</span><span class="bar"><i class="b-br" style="width:${x.b/x.n*100}%"></i><i class="b-pr" style="width:${x.p/x.n*100}%"></i><i class="b-ok" style="width:${ok/x.n*100}%"></i></span><span class="cnt">${x.n} walls · ${x.b} broken · ${x.p} pressed</span></button>`;}).join('');
+  $('tiles').querySelectorAll('.tile').forEach(t=>t.onclick=()=>{CUR=t.dataset.c; renderGame();});
+  const rows=Object.entries(W.walls).filter(([w,d])=>d.c===CUR).map(([w,d])=>({w,d,r:R[w]})).sort((a,b)=>b.r.s-a.r.s||b.r.p-a.r.p);
+  const lab=['holds','pressed','broken'], cls=['s-ok','s-pr','s-br'];
+  $('cwalls').innerHTML=`<h3>${esc(W.countries[CUR])}: lines of defence</h3><div class="tw"><table><thead><tr><th>Wall</th><th>Line</th><th class="n">Strength</th><th class="n">Push</th><th>Status</th></tr></thead><tbody>${rows.map(({w,d,r})=>`<tr><td><span class="mono muted" style="font-size:11px">${w}</span> ${esc(d.n)}</td><td>${d.l}</td><td class="n">${r.f.toFixed(2)}</td><td class="n">${r.p?r.p.toFixed(2):'—'}</td><td><span class="s ${cls[r.s]}">${lab[r.s]}</span></td></tr>`).join('')}</tbody></table></div>
+  <p class="muted" style="font-size:13px">Strength starts at the wall's effort (1 = rear guard, 3 = main line) and falls when a move drains a support it relies on. In the desktop model, UK walls also take pressure from inside, through the UK contagion web of 26 nodes; that inner layer is not part of this web version.</p>`;
+}
+renderMoves(); renderGame();
+
+/* ---------- companies ---------- */
+const C=T.cos; let KF='All', CC='SDLF';
+const KINDS=['All',...new Set(C.map(c=>c.k))];
+function renderKinds(){ $('kinds').innerHTML=KINDS.map(k=>`<button class="pill" data-k="${k}" aria-pressed="${k===KF}">${({'All':'All','Bank':'Banks','Insurer':'Insurers','Asset manager':'Asset managers','Company':'Other companies'})[k]||k}</button>`).join(''); $('kinds').querySelectorAll('button').forEach(b=>b.onclick=()=>{KF=b.dataset.k;renderKinds();renderList();}); }
+function renderList(){
+  const L=C.filter(c=>KF==='All'||c.k===KF).sort((a,b)=>(b.touch[2]-b.Q[2])-(a.touch[2]-a.Q[2]));
+  if(!L.find(c=>c.t===CC)&&L.length) CC=L[0].t;
+  $('clist').innerHTML=`<div class="mgrp">Sorted by model − market at −50%</div>`+L.map(c=>{const g=c.touch[2]-c.Q[2]; return `<button class="row" data-t="${esc(c.t)}" aria-current="${c.t===CC}"><span><div class="nm">${esc(c.n)}</div><div class="sub">${esc(c.t)} · ${c.k} · horizon ${c.T}y</div></span><span class="pv" style="color:${g>0.005?'var(--down)':'var(--muted)'}">${g>=0?'+':'−'}${Math.abs(g*100).toFixed(1)}</span></button>`;}).join('');
+  $('clist').querySelectorAll('.row').forEach(b=>b.onclick=()=>{CC=b.dataset.t;renderList();renderCo();});
+  renderCo();
+}
+function ladder(c){
+  const lv=['−20%','−30%','−50%','−70%'], Wd=640,H=220,L=60,R=12,T0=14,B=28; const mx=Math.max(0.05,...c.touch,...c.Q); const top=Math.ceil(mx*10)/10;
+  const Y=v=>T0+(top-v)/top*(H-T0-B), gw=(Wd-L-R)/4; let s='';
+  for(let i=0;i<=4;i++){const v=top*i/4; s+=`<line class="grid" x1="${L}" x2="${Wd-R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text x="${L-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${Math.round(v*100)}%</text>`;}
+  lv.forEach((l,i)=>{const x=L+i*gw+gw*0.18, w=gw*0.3; const a=c.touch[i], q=c.Q[i];
+    s+=`<rect class="ba" x="${x.toFixed(1)}" y="${Y(a).toFixed(1)}" width="${w.toFixed(1)}" height="${(Y(0)-Y(a)).toFixed(1)}"><title>Model ${pct(a)}</title></rect><rect class="bq" x="${(x+w+4).toFixed(1)}" y="${Y(q).toFixed(1)}" width="${w.toFixed(1)}" height="${(Y(0)-Y(q)).toFixed(1)}"><title>Market ${pct(q)}</title></rect>`;
+    s+=`<text x="${(x+w/2).toFixed(1)}" y="${(Y(a)-4).toFixed(1)}" text-anchor="middle">${(a*100).toFixed(1)}</text><text x="${(x+w*1.5+4).toFixed(1)}" y="${(Y(q)-4).toFixed(1)}" text-anchor="middle">${(q*100).toFixed(1)}</text><text class="lbl" x="${(x+w+2).toFixed(1)}" y="${H-8}" text-anchor="middle">${l}</text>`;});
+  return `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Probability ladder for ${esc(c.n)}">${s}</svg>`;
+}
+function pathChart(c){
+  const p=c.path||[]; if(p.length<2) return ''; const Wd=640,H=150,L=44,R=12,T0=10,B=22; const lo=Math.min(...p,0.9)*0.95, hi=Math.max(...p,1.1)*1.03;
+  const X=i=>L+i/(p.length-1)*(Wd-L-R), Y=v=>T0+(hi-v)/(hi-lo)*(H-T0-B);
+  return `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Monthly share price relative to its 24-month median"><line class="ref" x1="${L}" x2="${Wd-R}" y1="${Y(1).toFixed(1)}" y2="${Y(1).toFixed(1)}"/><text x="${L-6}" y="${(Y(1)+4).toFixed(1)}" text-anchor="end">1.0</text><text x="${L-6}" y="${(Y(hi)+10).toFixed(1)}" text-anchor="end">${hi.toFixed(2)}</text><text x="${L-6}" y="${(Y(lo)).toFixed(1)}" text-anchor="end">${lo.toFixed(2)}</text><path class="ln" d="${p.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1)).join('')}"/><text x="${L}" y="${H-6}">${p.length} months ago</text><text x="${Wd-R}" y="${H-6}" text-anchor="end">now</text></svg>`;
+}
+function treeHTML(n,depth=0){
+  if(!n) return '';
+  if(n.k==='basic') return `<div class="leaf">${esc(n.l)}<span class="pp">${n.p!=null?pct(n.p,0):''}</span><span class="src">${esc(n.s||'')}</span>${n.sn?`<span class="sen">Sensor: ${esc(n.sn)}</span>`:''}</div>`;
+  const g=n.k==='and'?'AND':n.k==='or'?'OR':(n.k||'').toUpperCase();
+  return `<details ${depth<2?'open':''}><summary><span class="gate ${n.k==='and'?'and':''}">${g}</span>${esc(n.l)}</summary>${(n.c||[]).map(x=>treeHTML(x,depth+1)).join('')}</details>`;
+}
+function renderCo(){
+  const c=C.find(x=>x.t===CC); if(!c){$('cdetail').innerHTML='';return;}
+  $('cdetail').innerHTML=`<div class="stack"><div class="eyebrow">${esc(c.t)} · ${c.k} · price ${c.price}p · horizon ${c.T} years</div><h3 style="font-size:21px">${esc(c.n)}</h3></div>
+   <div class="chart"><div class="eyebrow" style="margin-bottom:4px">Probability the price touches each level before the horizon</div>${ladder(c)}<div class="legend"><span><i style="background:var(--accent)"></i>model</span><span><i style="background:var(--alt)"></i>market-implied (${esc(c.qs)})</span></div></div>
+   <div class="two"><div class="stack"><div class="eyebrow">Balance-sheet tests</div><ul class="kv">${c.comps.map(x=>`<li>${esc(x[0])}</li>`).join('')}</ul><div class="eyebrow" style="margin-top:6px">Run threshold θ (share of holders who can leave before it fails)</div><p style="font-size:13.5px">${esc(c.theta||'—')}</p></div>
+   <div class="chart"><div class="eyebrow" style="margin-bottom:4px">Share price vs its 24-month median</div>${pathChart(c)}<p class="muted" style="font-size:12.5px">Annual volatility ${(c.hv*100).toFixed(0)}%.</p></div></div>
+   ${c.rungs&&c.rungs.length?`<div class="stack"><div class="eyebrow">Put ladder from the option chain</div><div class="tw"><table><thead><tr><th class="n">Strike</th><th class="n">Put price</th><th class="n">Kelly size</th></tr></thead><tbody>${c.rungs.map(r=>`<tr><td class="n">${r.K}p</td><td class="n">${r.P}p</td><td class="n">${r.f>0?pct(r.f,2):'0 (not worth it)'}</td></tr>`).join('')}</tbody></table></div></div>`:''}
+   <div class="stack"><div class="eyebrow">Fault tree: what has to happen for the fall</div><div class="tree">${treeHTML(c.tree)}</div><p class="muted" style="font-size:12.5px">Source tags: data = from filings; estimate = my judgement with a basis; placeholder = not yet calibrated; model = from another layer of the model.</p></div>`;
+}
+renderKinds(); renderList();
+const P=T.portfolio, nm=t=>(C.find(c=>c.t===t)||{}).n||t;
+$('port').innerHTML=`<thead><tr><th>Company</th><th class="n">Put strike</th><th class="n">Effective price</th><th class="n">Share of capital</th></tr></thead><tbody>${P.legs.map(l=>`<tr><td>${esc(nm(l.tick))}</td><td class="n">${l.K}p</td><td class="n">${l.P_eff}p</td><td class="n">${pct(l.w,2)}</td></tr>`).join('')}<tr><td><b>Total</b></td><td></td><td></td><td class="n"><b>${pct(P.total,2)}</b></td></tr></tbody>`;
+})();
+</script>
+</body>
+</html>

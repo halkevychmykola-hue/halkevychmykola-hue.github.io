@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NQ Strategy Explorer</title>
+<meta name="description" content="Interactive results of 60 Nasdaq-100 futures and options strategies, 2011–2025, with a portfolio builder and the option-price assumption as a control.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: explorer — controls strip, strategy list beside a detail panel, then portfolio builder and calibration table */
+:root{
+  --bg:#F3F5F7; --sheet:#FFFFFF; --ink:#141A21; --muted:#56616D; --rule:#D5DBE1; --tint:#E8EDF2;
+  --accent:#1F5B8F; --accent-soft:#DDE8F3; --up:#1E7A4C; --down:#B03A2E; --alt:#B07A12; --is:#E9EEF3;
+  --f-disp:"Archivo","Arial Narrow",Arial,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; --is:#1A222C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; --is:#1A222C; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:36px}
+a{color:var(--accent)}
+h1,h2,h3{font-family:var(--f-disp);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800;line-height:1.05}
+h2{font-size:clamp(22px,3.4vw,28px);font-weight:800}
+h3{font-size:17px;font-weight:700}
+p{margin:0;max-width:72ch}
+.eyebrow{font:500 12px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.back{font:500 13px var(--f-mono);text-decoration:none}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:16px;min-width:0}
+.ctrl{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:flex-start}
+.seg{display:flex;flex-direction:column;gap:6px}
+.seg .opts{display:flex;flex-wrap:wrap;gap:4px}
+button{font:inherit;color:inherit}
+.pill{font:500 12.5px var(--f-mono);border:1px solid var(--rule);background:var(--sheet);padding:6px 10px;border-radius:4px;cursor:pointer}
+.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+.pill:focus-visible,.row:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:12.5px;color:var(--muted);max-width:60ch}
+.explore{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.explore{grid-template-columns:1fr}}
+.list{display:flex;flex-direction:column;max-height:760px;overflow:auto;border:1px solid var(--rule);border-radius:8px;background:var(--sheet)}
+.row{display:grid;grid-template-columns:1fr 84px;gap:8px;align-items:center;padding:9px 12px;border:0;border-bottom:1px solid var(--rule);background:transparent;text-align:left;cursor:pointer}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--tint)}
+.row[aria-current="true"]{background:var(--accent-soft)}
+.row .nm{font-weight:500;font-size:14px;line-height:1.3}
+.row .sub{font:400 11.5px var(--f-mono);color:var(--muted);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap}
+.row svg{width:84px;height:28px}
+.chip{display:inline-block;font:500 11px var(--f-mono);padding:1px 6px;border-radius:3px;border:1px solid currentColor;white-space:nowrap}
+.v-ok{color:var(--up)} .v-mid{color:var(--alt)} .v-no{color:var(--down)} .v-none{color:var(--muted)}
+.sel{color:var(--accent)}
+.detail{display:flex;flex-direction:column;gap:14px}
+.tests{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:640px){.tests{grid-template-columns:1fr}}
+.test{border:1px solid var(--rule);border-radius:6px;padding:10px 12px;font-size:13.5px;display:flex;flex-direction:column;gap:4px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.st{border:1px solid var(--rule);border-radius:6px;padding:8px 10px}
+.st .v{font:600 19px var(--f-mono);font-variant-numeric:tabular-nums}
+.st .k{font-size:11.5px;color:var(--muted)}
+.chart svg{width:100%;height:auto;display:block}
+svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+svg .grid{stroke:var(--rule);stroke-width:1}
+svg .zero{stroke:var(--muted);stroke-width:1}
+svg .isb{fill:var(--is)}
+svg .ln{fill:none;stroke:var(--accent);stroke-width:2}
+svg .ln2{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3}
+svg .lnf{fill:none;stroke:var(--alt);stroke-width:1.5}
+svg .bp{fill:var(--up)} svg .bn{fill:var(--down)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;margin-right:6px;vertical-align:3px}
+.pf{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.pf{grid-template-columns:1fr}}
+.picks{max-height:520px;overflow:auto;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);padding:6px 0}
+.picks label{display:flex;gap:8px;align-items:flex-start;padding:5px 12px;font-size:13.5px;cursor:pointer}
+.picks label:hover{background:var(--tint)}
+.picks .grp{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 12px 2px}
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 12px;border-bottom:1px solid var(--rule);text-align:left}
+th{font:500 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--tint)}
+td.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.note{border-left:4px solid var(--alt);background:var(--sheet);border-radius:0 8px 8px 0;padding:12px 14px;font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="stack">
+    <a class="back" href="index.html#nq">← Back to all projects</a>
+    <div class="eyebrow">Project 01 · NQ · interactive results</div>
+    <h1>NQ strategy explorer</h1>
+    <p>Every strategy in the project followed one path: an idea with a named mechanism → a market simulator where that mechanism can be switched off → a frozen run on real Nasdaq-100 futures (NQ) data → selection by rules written in advance. Here you can open any of the 60 strategies, see how it did before and after 2017, and build a portfolio.</p>
+    <div class="note">Monthly results 2011–2025, in % of one contract's value, summed without compounding. 2011–2016 (shaded) is where thresholds were set; 2017–2025 is the out-of-sample test. Costs are included. Raw market data is not published, only aggregated results.</div>
+  </header>
+
+  <section class="panel ctrl" aria-label="Controls">
+    <div class="seg">
+      <div class="eyebrow">Show</div>
+      <div class="opts" id="fLayer"></div>
+    </div>
+    <div class="seg">
+      <div class="eyebrow">Verdict</div>
+      <div class="opts" id="fVerdict"></div>
+    </div>
+    <div class="seg">
+      <div class="eyebrow">Option price assumption: w</div>
+      <div class="opts" id="fW"></div>
+      <div class="hint">How much the option price already reflects current volatility. 0 = priced only on slow volatility; 1 = fully up to date.</div>
+    </div>
+    <div class="seg">
+      <div class="eyebrow">ATM level vs VXN: k</div>
+      <div class="opts" id="fK"></div>
+    </div>
+  </section>
+
+  <section class="explore">
+    <div class="list" id="list" role="list" aria-label="Strategies"></div>
+    <div class="panel detail" id="detail"></div>
+  </section>
+
+  <section class="stack">
+    <div class="eyebrow">Portfolio builder</div>
+    <h2>Combine strategies</h2>
+    <p class="muted">Pick strategies or start from a preset. "Equal risk" scales each strategy by its 2011–16 volatility, so no single one dominates, then scales the whole portfolio to the same volatility as holding one long NQ contract, so the yearly % can be compared with long NQ directly. "One contract each" simply adds the positions up, so the % grows with the number of strategies.</p>
+    <div class="ctrl">
+      <div class="seg"><div class="eyebrow">Preset</div><div class="opts" id="presets"></div></div>
+      <div class="seg"><div class="eyebrow">Weighting</div><div class="opts" id="fWt"></div></div>
+    </div>
+    <div class="pf">
+      <div class="picks" id="picks"></div>
+      <div class="panel detail" id="pfout"></div>
+    </div>
+  </section>
+
+  <section class="stack">
+    <div class="eyebrow">Does the simulator look like the real market?</div>
+    <h2>Calibration: simulator against NQ</h2>
+    <p class="muted">Before trusting any result from the simulator, its statistics were compared with real NQ. The three simulator values are three settings of how long volatility "remembers" the past.</p>
+    <div class="tw"><table id="facts"></table></div>
+  </section>
+
+  <footer class="muted" style="font-size:13px;border-top:1px solid var(--rule);padding-top:14px">Research, not trading results. <a href="index.html">Mykola Halkevych</a> · <a href="https://github.com/halkevychmykola-hue">GitHub</a></footer>
+</div>
+
+<script src="nq_data.js"></script>
+<script>
+(function(){
+const N=window.NQ, M=N.months, NM=M.length, YR=M.map(m=>+m.slice(0,4)), WARM=YR.map(y=>y<=2016);
+const W=N.grid.w, K=N.grid.k, byId=Object.fromEntries(N.cat.map(c=>[c.id,c]));
+const S={layer:'all',verdict:'all',wi:2,ki:1,cur:'H1',weight:'eq',pick:new Set(N.cat.filter(c=>c.sel).map(c=>c.id))};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=(x,d=1)=>(x<0?'−':x>0?'+':'')+Math.abs(x).toFixed(d);
+const VER={ok:'holds',mid:'partly',no:'rejected',none:'—'};
+const chip=(v,lab)=>`<span class="chip v-${v}" title="${lab}">${lab.split(' ')[0]} ${VER[v]}</span>`;
+function ser(c){ if(!c.series) return null; return c.layer==='options'? N.opt[c.series.slice(3)][S.wi*K.length+S.ki] : N.fut[c.series]; }
+function std(a,mask){let s=0,s2=0,n=0;for(let i=0;i<a.length;i++){if(mask&&!mask[i])continue;s+=a[i];s2+=a[i]*a[i];n++;}const m=s/n;return Math.sqrt(Math.max(s2/n-m*m,0));}
+function stats(a){
+  const n=a.length; let s=0; for(const x of a) s+=x; const mean=s/n, vol=std(a)*Math.sqrt(12), ann=mean*12;
+  let cum=0,peak=0,dd=0; for(const x of a){cum+=x;peak=Math.max(peak,cum);dd=Math.min(dd,cum-peak);}
+  const ys={}; a.forEach((x,i)=>{ys[YR[i]]=(ys[YR[i]]||0)+x;}); const yv=Object.values(ys);
+  const part=f=>{let t=0,c=0;a.forEach((x,i)=>{if(f(YR[i])){t+=x;c++;}});return t/c*12;};
+  const L=N.fut['лонг']; let ml=0; for(const x of L) ml+=x; ml/=n; let cv=0,va=0,vl=0; for(let i=0;i<n;i++){cv+=(a[i]-mean)*(L[i]-ml);va+=(a[i]-mean)**2;vl+=(L[i]-ml)**2;}
+  return {ann,sharpe:vol>0?ann/vol:NaN,dd,posY:yv.filter(v=>v>0).length,nY:yv.length,a11:part(y=>y<=2016),a17:part(y=>y>=2017),corr:va>0?cv/Math.sqrt(va*vl):NaN,years:ys};
+}
+const cumsum=a=>{let c=0;return a.map(x=>c+=x);};
+
+/* ---------- charts ---------- */
+function lineChart(series, opts={}){
+  const Wd=720,H=opts.h||260,L=46,R=12,T=12,B=26;
+  let lo=0,hi=0; series.forEach(s=>s.v.forEach(v=>{lo=Math.min(lo,v);hi=Math.max(hi,v);})); if(hi-lo<1e-9){hi+=1;lo-=1;}
+  const pad=(hi-lo)*0.06; lo-=pad; hi+=pad;
+  const X=i=>L+i/(NM-1)*(Wd-L-R), Y=v=>T+(hi-v)/(hi-lo)*(H-T-B);
+  const step=niceStep((hi-lo)/5); let g='';
+  for(let v=Math.ceil(lo/step)*step; v<=hi; v+=step){ g+=`<line class="grid" x1="${L}" x2="${Wd-R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text x="${L-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${Math.round(v*100)/100}</text>`; }
+  const isEnd=X(YR.indexOf(2017)-0.5);
+  let xt=''; [2011,2014,2017,2020,2023].forEach(y=>{const i=YR.indexOf(y); xt+=`<text x="${X(i).toFixed(1)}" y="${H-8}" text-anchor="middle">${y}</text>`;});
+  const paths=series.map(s=>`<path class="${s.cls}" d="${s.v.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1)).join('')}"/>`).join('');
+  return `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="${esc(opts.label||'Cumulative result')}"><rect class="isb" x="${L}" y="${T}" width="${(isEnd-L).toFixed(1)}" height="${H-T-B}"/>${g}<line class="zero" x1="${L}" x2="${Wd-R}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"/>${xt}<text x="${L+6}" y="${T+13}">2011–16 · in-sample</text><text x="${(isEnd+6).toFixed(1)}" y="${T+13}">2017–25 · out-of-sample</text>${paths}</svg>`;
+}
+function niceStep(x){const p=Math.pow(10,Math.floor(Math.log10(x)));const f=x/p;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p;}
+function yearBars(ys){
+  const yrs=Object.keys(ys).map(Number), vals=yrs.map(y=>ys[y]); const Wd=720,H=150,L=46,R=12,T=10,B=24;
+  let lo=Math.min(0,...vals),hi=Math.max(0,...vals); if(hi-lo<1e-9){hi=1;}
+  const Y=v=>T+(hi-v)/(hi-lo)*(H-T-B), bw=(Wd-L-R)/yrs.length;
+  let s=`<line class="zero" x1="${L}" x2="${Wd-R}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"/>`;
+  yrs.forEach((y,i)=>{const v=vals[i],x=L+i*bw+bw*0.15,w=bw*0.7,y0=Y(Math.max(v,0)),h=Math.abs(Y(v)-Y(0));
+    s+=`<rect class="${v>=0?'bp':'bn'}" x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(h,0.8).toFixed(1)}"><title>${y}: ${fmt(v)}%</title></rect>`;
+    if(i%2===0) s+=`<text x="${(x+w/2).toFixed(1)}" y="${H-7}" text-anchor="middle">${String(y).slice(2)}</text>`;});
+  s+=`<text x="${L-6}" y="${(Y(hi)+4).toFixed(1)}" text-anchor="end">${hi.toFixed(0)}</text><text x="${L-6}" y="${(Y(lo)+4).toFixed(1)}" text-anchor="end">${lo.toFixed(0)}</text>`;
+  return `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Result by calendar year">${s}</svg>`;
+}
+function spark(a){ if(!a) return '<svg viewBox="0 0 84 28"></svg>'; const c=cumsum(a); let lo=Math.min(0,...c),hi=Math.max(0,...c); if(hi-lo<1e-9)hi=lo+1;
+  const X=i=>i/(c.length-1)*84, Y=v=>2+(hi-v)/(hi-lo)*24; const end=c[c.length-1];
+  return `<svg viewBox="0 0 84 28" aria-hidden="true"><line x1="0" x2="84" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--rule)"/><path d="${c.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1)).join('')}" fill="none" stroke="${end>=0?'var(--up)':'var(--down)'}" stroke-width="1.5"/></svg>`; }
+function statTiles(st,label){
+  return `<div class="stats">
+   <div class="st"><div class="v">${fmt(st.ann)}%</div><div class="k">per year, 2011–25</div></div>
+   <div class="st"><div class="v">${isFinite(st.sharpe)?st.sharpe.toFixed(2):'—'}</div><div class="k">Sharpe ratio</div></div>
+   <div class="st"><div class="v">${fmt(st.dd)}%</div><div class="k">max drawdown</div></div>
+   <div class="st"><div class="v">${st.posY}/${st.nY}</div><div class="k">positive years</div></div>
+   <div class="st"><div class="v">${fmt(st.a11)}%</div><div class="k">per year, 2011–16</div></div>
+   <div class="st"><div class="v">${fmt(st.a17)}%</div><div class="k">per year, 2017–25</div></div>
+   <div class="st"><div class="v">${isFinite(st.corr)?st.corr.toFixed(2):'—'}</div><div class="k">correlation with long NQ</div></div>
+  </div>`;
+}
+
+/* ---------- controls ---------- */
+function pills(el, items, get, set){
+  $(el).innerHTML=items.map(([v,l])=>`<button class="pill" data-v="${v}" aria-pressed="${String(get())===String(v)}">${l}</button>`).join('');
+  $(el).querySelectorAll('button').forEach(b=>b.onclick=()=>{ set(b.dataset.v); pills(el,items,get,set); render(); });
+}
+pills('fLayer',[['all','All 60'],['futures','Futures'],['options','Options']],()=>S.layer,v=>S.layer=v);
+pills('fVerdict',[['all','All'],['sel','Selected by the rules'],['both','Holds in sim and NQ'],['rej','Rejected']],()=>S.verdict,v=>S.verdict=v);
+pills('fW',W.map((w,i)=>[i,String(w)]),()=>S.wi,v=>S.wi=+v);
+pills('fK',K.map((k,i)=>[i,k.toFixed(2)+'×']),()=>S.ki,v=>S.ki=+v);
+pills('fWt',[['eq','Equal risk, matched to long NQ'],['raw','One contract each']],()=>S.weight,v=>S.weight=v);
+const PRE={'Selected by the rules':()=>N.cat.filter(c=>c.sel).map(c=>c.id),'Selected futures':()=>N.cat.filter(c=>c.sel&&c.layer==='futures').map(c=>c.id),
+  'Selected options':()=>N.cat.filter(c=>c.sel&&c.layer==='options').map(c=>c.id),'Everything with results':()=>N.cat.filter(c=>c.series&&c.id!=='лонг').map(c=>c.id),'Clear':()=>[]};
+$('presets').innerHTML=Object.keys(PRE).map(k=>`<button class="pill" data-k="${k}">${k}</button>`).join('');
+$('presets').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.pick=new Set(PRE[b.dataset.k]());renderPicks();renderPf();});
+
+function visible(){
+  return N.cat.filter(c=>{
+    if(S.layer!=='all'&&c.layer!==S.layer) return false;
+    if(S.verdict==='sel'&&!c.sel) return false;
+    if(S.verdict==='both'&&!(c.sv==='ok'&&c.nv==='ok')) return false;
+    if(S.verdict==='rej'&&!(c.sv==='no'||c.nv==='no')) return false;
+    return true;});
+}
+function renderList(){
+  const vs=visible(); if(!vs.find(c=>c.id===S.cur)&&vs.length) S.cur=vs[0].id;
+  $('list').innerHTML=vs.map(c=>`<button class="row" role="listitem" data-id="${esc(c.id)}" aria-current="${c.id===S.cur}">
+    <span><div class="nm">${esc(c.name)}</div><div class="sub"><span>${c.layer} · ${esc(c.hold)}</span>${chip(c.sv,'Sim')}${chip(c.nv,'NQ')}${c.sel?'<span class="chip sel">selected</span>':''}</div></span>${spark(ser(c))}</button>`).join('') || '<p class="muted" style="padding:14px">No strategies match these filters.</p>';
+  $('list').querySelectorAll('.row').forEach(b=>b.onclick=()=>{S.cur=b.dataset.id;renderList();renderDetail();});
+}
+function renderDetail(){
+  const c=byId[S.cur]; if(!c){$('detail').innerHTML='';return;}
+  const a=ser(c);
+  let h=`<div class="stack"><div class="eyebrow">${c.layer} · ${c.contour} · hold ${esc(c.hold)}${c.sel?' · selected by the rules':''}</div><h3 style="font-size:21px">${esc(c.name)}</h3><p>${esc(c.logic)}</p></div>
+  <div class="tests"><div class="test"><div class="eyebrow">Simulator test · <span class="v-${c.sv}">${VER[c.sv]}</span></div><div>${esc(c.stext||'—')}</div></div>
+  <div class="test"><div class="eyebrow">Real NQ test · <span class="v-${c.nv}">${VER[c.nv]}</span></div><div>${esc(c.ntext||'—')}</div></div></div>`;
+  if(a){
+    const st=stats(a);
+    h+=`<div class="chart">${lineChart([{v:cumsum(N.fut['лонг']),cls:'ln2'},{v:cumsum(a),cls:'ln'}],{label:'Cumulative result of '+c.name})}<div class="legend"><span><i style="background:var(--accent)"></i>this strategy, cumulative %</span><span><i style="background:var(--muted)"></i>long NQ, one contract</span></div></div>
+    ${statTiles(st)}<div class="chart"><div class="eyebrow" style="margin-bottom:4px">By calendar year, %</div>${yearBars(st.years)}</div>`;
+    if(c.layer==='options') h+=`<p class="hint">Option result shown at w = ${W[S.wi]}, k = ${K[S.ki].toFixed(2)}×VXN. Change the assumption above: many option strategies flip sign, which is why the price assumption is treated as an unknown, not a fact.</p>`;
+  } else h+=`<p class="muted">No monthly series: this strategy was rejected before the NQ run.</p>`;
+  $('detail').innerHTML=h;
+}
+function renderPicks(){
+  const g={futures:[],options:[]}; N.cat.filter(c=>c.series&&c.id!=='лонг').forEach(c=>g[c.layer].push(c));
+  $('picks').innerHTML=Object.entries(g).map(([k,arr])=>`<div class="grp">${k}</div>`+arr.map(c=>`<label><input type="checkbox" id="pk-${esc(c.id)}" data-id="${esc(c.id)}" ${S.pick.has(c.id)?'checked':''}><span>${esc(c.name)} <span class="muted mono" style="font-size:11.5px">${esc(c.hold)}</span></span></label>`).join('')).join('');
+  $('picks').querySelectorAll('input').forEach(i=>i.onchange=()=>{i.checked?S.pick.add(i.dataset.id):S.pick.delete(i.dataset.id);renderPf();});
+}
+function portfolio(){
+  const out=new Array(NM).fill(0);
+  const ids=[...S.pick].filter(id=>byId[id]&&byId[id].series);
+  ids.forEach(id=>{const a=ser(byId[id]); let w=1; if(S.weight==='eq'){const s=std(a,WARM); w=s>0?1/s:0;} for(let i=0;i<NM;i++) out[i]+=a[i]*w;});
+  if(S.weight==='eq'&&ids.length){const ref=std(N.fut['лонг']),b=std(out); const k=b>0?ref/b:1; for(let i=0;i<NM;i++) out[i]*=k;}
+  return {out,n:ids.length};
+}
+function renderPf(){
+  const {out,n}=portfolio();
+  if(!n){$('pfout').innerHTML='<p class="muted">Pick at least one strategy.</p>';return;}
+  const st=stats(out), lg=stats(N.fut['лонг']);
+  $('pfout').innerHTML=`<div class="eyebrow">${n} strateg${n===1?'y':'ies'} · ${S.weight==='eq'?'equal risk, same volatility as long NQ':'one contract each, % of one contract summed over positions'} · options at w = ${W[S.wi]}, k = ${K[S.ki].toFixed(2)}×</div>
+   <div class="chart">${lineChart([{v:cumsum(N.fut['лонг']),cls:'ln2'},{v:cumsum(out),cls:'ln'}],{label:'Portfolio cumulative result'})}<div class="legend"><span><i style="background:var(--accent)"></i>portfolio, cumulative %</span><span><i style="background:var(--muted)"></i>long NQ: ${fmt(lg.ann)}% a year, Sharpe ${lg.sharpe.toFixed(2)}, max drawdown ${fmt(lg.dd)}%</span></div></div>
+   ${statTiles(st)}<div class="chart"><div class="eyebrow" style="margin-bottom:4px">By calendar year, %</div>${yearBars(st.years)}</div>
+   <div class="note" style="font-size:13.5px">Read with care. Real historical NQ option prices were not available, so option results depend on the assumed price (w and k above). With the selected strategies, moving w from 0 to 1 cuts the portfolio Sharpe from about 2.5 to about 0.6. At strategy level no edge is statistically proven yet (Sharpe about 0.5 ± 0.7). The 2017–25 line is a fair test of rules written in advance, not a forecast.</div>`;
+}
+function renderFacts(){
+  $('facts').innerHTML=`<thead><tr><th>Statistic</th><th class="n">Real NQ</th><th class="n">Simulator (3 settings)</th></tr></thead><tbody>`+
+   N.facts.map(r=>`<tr><td>${esc(r.n)}</td><td class="n">${r.nq.toFixed(r.nq>100?0:2)}</td><td class="n">${r.st.map(x=>x.toFixed(Math.abs(x)>100?0:2)).join(' · ')}</td></tr>`).join('')+'</tbody>';
+}
+function render(){renderList();renderDetail();renderPf();}
+renderPicks(); renderFacts(); render();
+})();
+</script>
+</body>
+</html>

@@ -8,4 +8,6 @@ Independent research projects in finance (autumn 2026):
 
 Live site: https://halkevychmykola-hue.github.io
 
+Interactive pages: `nq.html` (60 strategies and a portfolio builder), `tail.html` (Blotto game over 358 defences and 48 UK companies), `circuit.html` (2022 replay).
+
 All results are research (backtests, replays, simulations), not trading results.

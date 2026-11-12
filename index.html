@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mykola Halkevych Research</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Independent research in market microstructure, UK credit risk and event-driven commodities by Mykola Halkevych, Banking and Finance student at Manchester Metropolitan University.">
@@ -98,6 +98,9 @@ svg .dot-a{fill:var(--accent)} svg .dot-b{fill:var(--sheet);stroke:var(--alt);st
 .limits li{margin:4px 0;max-width:66ch}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .tags span{font:500 12.5px var(--f-mono);border:1px solid var(--rule);background:var(--sheet);border-radius:4px;padding:4px 8px}
+.cta{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;font:600 14px var(--f-body);text-decoration:none;color:var(--sheet);background:var(--accent);padding:10px 16px;border-radius:6px}
+.cta:hover{filter:brightness(1.08)}
+.cta:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direction:column;gap:8px;color:var(--muted);font-size:14px}
 </style>
 </head>
@@ -116,6 +119,9 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
     <a href="#tail">Tail: UK credit stress</a>
     <a href="#circuit">Circuit-1: commodities</a>
     <a href="#learned">What I learned</a>
+    <a href="nq.html">Explore NQ ↗</a>
+    <a href="tail.html">Explore Tail ↗</a>
+    <a href="circuit.html">Explore Circuit-1 ↗</a>
     <a href="#about">About</a>
   </nav>
 </header>
@@ -149,6 +155,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
 <article class="rec" id="nq">
   <div class="strip"><span class="id">01 · NQ</span><span>Market microstructure · quant research</span><span>Python</span><span>Data 2007–2025</span></div>
   <h2>A multi-scale market model for Nasdaq-100 futures</h2>
+  <a class="cta" href="nq.html">Open the interactive explorer: 60 strategies, portfolio builder →</a>
   <p class="q">At any moment, from one minute to one month ahead, what is the most effective action after costs, including doing nothing? The model does not forecast prices.</p>
 
   <div class="stack">
@@ -238,6 +245,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
 <article class="rec" id="tail">
   <div class="strip"><span class="id">02 · TAIL</span><span>Credit risk · equity research</span><span>Python</span><span>Results as of 7 Nov 2026</span></div>
   <h2>Tail: a distress and credit-risk model for UK companies</h2>
+  <a class="cta" href="tail.html">Open the interactive model: Blotto game and 48 companies →</a>
   <p class="q">For 48 UK listed companies, how likely is a forced painful step (a rights issue, a dividend cut or a restructuring) and a 50–70% share-price fall before an option expires? And does the options market price that risk correctly?</p>
 
   <div class="stack">
@@ -304,6 +312,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
 <article class="rec" id="circuit">
   <div class="strip"><span class="id">03 · CIRCUIT-1</span><span>Macro · commodities · geopolitics</span><span>Python, C++20</span><span>Oct–Nov 2026</span></div>
   <h2>Circuit-1: event-driven macro and commodity futures</h2>
+  <a class="cta" href="circuit.html">Open the interactive 2022 replay: every trade, rules vs me →</a>
   <p class="q">Can a disciplined process trade commodity and currency futures only after a real physical supply shock (a war hitting a supplier, sanctions with a start date, an export ban, a blocked route) and stay out the rest of the time? Typically that means 2–3 ideas a year.</p>
 
   <div class="stack">
