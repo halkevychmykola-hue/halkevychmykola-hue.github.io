@@ -73,9 +73,13 @@ tr.det td{background:var(--tint);font-size:13px}
 .calc input{font:500 14px var(--f-mono);padding:7px 9px;border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--ink)}
 ul.facts{margin:0;padding-left:20px} ul.facts li{margin:5px 0;max-width:72ch}
 footer{font-size:13px;border-top:1px solid var(--rule);padding-top:14px}
+details.more{border:1px solid var(--rule);border-radius:4px;padding:10px 14px;background:var(--sheet)}
+details.more>summary{cursor:pointer;font:500 12.5px var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+details.more[open]>summary{margin-bottom:8px}
 </style>
 </head>
 <body>
+<div class="bbar" role="navigation" aria-label="Projects"><span class="bk">MH</span><a href="index.html"><b>0)</b>HOME</a><a href="nq.html"><b>1)</b>NQ MODEL</a><a href="tail.html"><b>2)</b>TAIL</a><a href="circuit.html" aria-current="page"><b>3)</b>CIRCUIT-1</a><span class="go">Halkevych · independent research · autumn 2026</span></div>
 <div class="wrap">
   <header class="stack">
     <a class="back" href="index.html#circuit">← Back to all projects</a>
@@ -143,15 +147,13 @@ footer{font-size:13px;border-top:1px solid var(--rule);padding-top:14px}
         <tr><td>Commodities, strong supply channel</td><td class="n">47</td><td class="pos">+31.5R (+0.67R per trade)</td></tr>
         <tr><td>Weak channel (country with a small supply share)</td><td class="n">28</td><td>+0.07R per trade</td></tr>
         <tr><td>Trading on data releases (EIA, CPI, WASDE), 2022 replay</td><td class="n">16</td><td>+0.10R per trade</td></tr>
-        <tr><td>"Fear" trades in yen, Swiss franc, short AUD</td><td class="n">52</td><td class="neg">−24.3R, dropped</td></tr>
         <tr><td>One idea per event, strong channel</td><td class="n">19 ideas</td><td>+9.14R; +2.44R without the 2020 oil price war; −0.57R without 2020 and Ukraine 2022</td></tr>
       </tbody></table></div>
     <p class="muted">The edge rests on a few very large events and is not statistically proven (t ≈ 1.2). The event list was assembled in hindsight, so the next test is a blind radar in replay and forward paper trading.</p>
   </section>
 
-  <section class="stack">
-    <div class="eyebrow">Pre-registered tests, 2010–2022</div>
-    <h2>What I tested and rejected</h2>
+  <details class="more">
+    <summary>Pre-registered tests I rejected, 2010–2022</summary>
     <ul class="facts">
       <li>Driver variables give no out-of-sample direction (information coefficient ≈ 0).</li>
       <li>The level of the supply–demand balance does not predict direction; the sign of the reaction to a report is right in 59–75% of cases.</li>
@@ -159,13 +161,14 @@ footer{font-size:13px;border-top:1px solid var(--rule);padding-top:14px}
       <li>News enters the price on the day it comes out. What matters is matching the holding period to the catalyst; breakeven stops and trailing do not help.</li>
       <li>Mechanical entry after the USDA WASDE report: rejected. Weekly EIA data adds about +0.03R. On CPI, payrolls and FOMC only gold passes.</li>
       <li>Option overlays, a bubble detector (BSADF), straddles after a crash, holding longer, forced-seller trades (t 1.63): none passed the pre-registered rule.</li>
+      <li>"Fear" trades in the yen, Swiss franc and short AUD: 52 trades, −24.3R, dropped.</li>
     </ul>
-  </section>
+  </details>
 
   <footer class="muted">Research, not trading results. <a href="index.html">Mykola Halkevych</a> · <a href="https://github.com/halkevychmykola-hue">GitHub</a></footer>
 </div>
 
-<script src="circuit_data.js"></script>
+<script>window.C1=[{"id":1,"m":"2022-01","mk":"Palladium","c":"PA H22","side":"Long","j":-0.54,"g":false,"gr":"No driver named (\"short-term long\")","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":0.31,"go":0.0},{"id":2,"m":"2022-01","mk":"Gasoline (RBOB)","c":"RB G22","side":"Long","j":1.38,"g":true,"gr":"Driver: inventories and supply outages","gcat":"","cls":"A","v2":0.5,"ex":"stop at +0.5R","nt":"+1R on 18 Jan; stop raised to +0.5R (2.377) from 19 Jan","xo":1.02,"go":1.38},{"id":3,"m":"2022-01","mk":"Cotton","c":"CT H22","side":"Long","j":1.02,"g":true,"gr":"Driver: Xinjiang sanctions + stocks","gcat":"","cls":"A","v2":1.95,"ex":"held to month-end settlement","nt":"+1R on 19 Jan; stop raised to +0.5R (118.3) from 20 Jan","xo":1.42,"go":1.02},{"id":4,"m":"2022-01","mk":"Cocoa","c":"CC H22","side":"Long","j":-0.11,"g":true,"gr":"Driver: lower harvest","gcat":"","cls":"A","v2":0.5,"ex":"stop at +0.5R","nt":"+1R on 14 Jan; stop raised to +0.5R (2593) from 18 Jan","xo":0.95,"go":-0.11},{"id":5,"m":"2022-01","mk":"Corn","c":"ZC H22","side":"Short","j":-0.65,"g":false,"gr":"No driver named","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-0.18,"go":0.0},{"id":6,"m":"2022-01","mk":"Platinum","c":"PL J22","side":"Long","j":0.78,"g":true,"gr":"Driver: physical shortage","gcat":"","cls":"A","v2":0.5,"ex":"stop at +0.5R","nt":"+1R on 19 Jan; stop raised to +0.5R (993.2) from 20 Jan","xo":1.01,"go":0.78},{"id":7,"m":"2022-01","mk":"Silver","c":"SIL H22","side":"Long","j":0.01,"g":true,"gr":"Driver named (funds / India / deficit / solar demand)","gcat":"","cls":"A","v2":0.44,"ex":"stopped on a gap","nt":"+1R on 19 Jan; stop raised to +0.5R (23.12) from 20 Jan","xo":1.24,"go":0.01},{"id":8,"m":"2022-01","mk":"Soybean meal","c":"ZM H22","side":"Long","j":-0.92,"g":false,"gr":"Positioning is not a driver","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-1.03,"go":0.0},{"id":9,"m":"2022-01","mk":"Gold","c":"GC G22","side":"Long","j":0.73,"g":false,"gr":"No driver named","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":0.28,"go":0.0},{"id":10,"m":"2022-02","mk":"Silver","c":"SIL H22","side":"Long","j":0.58,"g":false,"gr":"\"Bottom of the range\" is not a driver","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":0.5,"go":0.0},{"id":11,"m":"2022-02","mk":"Soybeans","c":"ZS H22","side":"Long","j":1.33,"g":true,"gr":"Driver: South American harvest","gcat":"","cls":"A","v2":0.5,"ex":"stop at +0.5R","nt":"+1R on 10 Feb; stop raised to +0.5R (1568) from 11 Feb","xo":0.5,"go":1.33},{"id":12,"m":"2022-02","mk":"Soybean meal","c":"ZM H22","side":"Short","j":-1.0,"g":false,"gr":"Main channel points the other way (Argentina)","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-1.31,"go":0.0},{"id":13,"m":"2022-02","mk":"Coffee","c":"KC H22","side":"Long","j":0.4,"g":false,"gr":"No driver named","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":1.38,"go":0.0},{"id":14,"m":"2022-02","mk":"Corn","c":"ZC H22","side":"Long","j":-1.08,"g":true,"gr":"Driver: South American crop revision","gcat":"","cls":"A","v2":0.72,"ex":"held to the session before first notice day","nt":"+1R on 22 Feb; stop raised to +0.5R (651.8) from 23 Feb","xo":0.22,"go":-1.08},{"id":15,"m":"2022-03","mk":"Cotton","c":"CT K22","side":"Long","j":-1.0,"g":false,"gr":"Driver not written down","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-0.68,"go":0.0},{"id":16,"m":"2022-03","mk":"Sugar","c":"SB K22","side":"Short","j":-1.0,"g":false,"gr":"Placeholder trade","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-1.0,"go":0.0},{"id":17,"m":"2022-03","mk":"Feeder cattle","c":"GF J22","side":"Long","j":0.5,"g":false,"gr":"Driver not written down","gcat":"driver","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-0.28,"go":0.0},{"id":18,"m":"2022-03","mk":"Corn","c":"ZC K22","side":"Long","j":-0.41,"g":false,"gr":"Entry: chasing the move + report without consensus","gcat":"entry","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":0.05,"go":0.0},{"id":19,"m":"2022-04","mk":"Aluminium","c":"ALI M22","side":"Long","j":-0.63,"g":false,"gr":"Instrument: illiquid market (removed 11 Apr)","gcat":"instrument","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":null,"go":0.0},{"id":20,"m":"2022-04","mk":"WTI crude","c":"CL K22","side":"Short","j":-1.0,"g":false,"gr":"Entry: condition reversed before execution","gcat":"entry","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-1.0,"go":0.0},{"id":21,"m":"2022-04","mk":"Diesel (heating oil)","c":"HO K22","side":"Long","j":1.71,"g":true,"gr":"Driver: Europe's dependence on Russian diesel","gcat":"","cls":"A","v2":3.49,"ex":"held to the session before last trading day","nt":"+1R on 14 Apr; stop raised to +0.5R (3.686) from 18 Apr","xo":3.49,"go":1.71},{"id":22,"m":"2022-04","mk":"Natural gas","c":"NG K22","side":"Long","j":1.44,"g":true,"gr":"Driver: production + storage + LNG exports","gcat":"","cls":"A","v2":0.5,"ex":"stop at +0.5R","nt":"+1R on 18 Apr; stop raised to +0.5R (7.046) from 19 Apr","xo":0.5,"go":1.44},{"id":23,"m":"2022-04","mk":"Palladium","c":"PA M22","side":"Short","j":0.0,"g":true,"gr":"Driver: London (LPPM) premium will deflate","gcat":"","cls":"A","v2":0.14,"ex":"held to month-end settlement","nt":"","xo":0.14,"go":0.0},{"id":24,"m":"2022-04","mk":"Soybeans","c":"ZS K22","side":"Short","j":1.19,"g":true,"gr":"Class B: entry after a report with consensus","gcat":"","cls":"B","v2":0.31,"ex":"class B: exit 2 days after the reaction","nt":"","xo":0.31,"go":1.19},{"id":25,"m":"2022-05","mk":"Diesel (heating oil)","c":"HO M22","side":"Long","j":-0.31,"g":false,"gr":"Entry: driver variable reversed before entry","gcat":"entry","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-0.29,"go":0.0},{"id":26,"m":"2022-05","mk":"Silver","c":"SIL N22","side":"Long","j":-1.0,"g":false,"gr":"Entry: condition reversed on execution day","gcat":"entry","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-1.0,"go":0.0},{"id":27,"m":"2022-05","mk":"Soybean meal","c":"ZM N22","side":"Short","j":0.45,"g":true,"gr":"Driver: meal share of the crush (class A)","gcat":"","cls":"A","v2":0.32,"ex":"held to month-end settlement","nt":"","xo":0.49,"go":0.45},{"id":28,"m":"2022-05","mk":"Soybeans","c":"ZS N22","side":"Short","j":-0.55,"g":false,"gr":"Entry + instrument: no consensus, wrong contract","gcat":"entry","cls":"A","v2":0.0,"ex":"not entered","nt":"","xo":-0.67,"go":0.0},{"id":29,"m":"2022-06","mk":"Gasoline (RBOB)","c":"RB Q22","side":"Long","j":-0.8,"g":true,"gr":"By protocol v1 (5 gates)","gcat":"","cls":"A","v2":-1.0,"ex":"stopped at −1R","nt":"","xo":-1.0,"go":-0.8},{"id":30,"m":"2022-08","mk":"Diesel crack spread","c":"CRACK V22","side":"Long","j":0.93,"g":true,"gr":"By protocol (5 gates)","gcat":"","cls":"A","v2":1.17,"ex":"held to month-end settlement","nt":"+1R on 17 Aug; stop raised to +0.5R (56.06) from 18 Aug","xo":1.17,"go":0.93}];</script>
 <script>
 (function(){
 const D=window.C1, $=id=>document.getElementById(id);
@@ -223,5 +226,41 @@ function calc(){ const g=id=>+$(id).value||0; const acc=g('cAcc'),risk=g('cRisk'
 ['cAcc','cRisk','cVol','cT','cPx','cMult'].forEach(id=>$(id).oninput=calc); calc();
 })();
 </script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&display=swap">
+<style id="bbg">
+/* Terminal theme: black screen, amber headers, white data, green/red for sign. One palette for all four pages. */
+:root:root:root{
+  color-scheme:dark;
+  --bg:#000000; --sheet:#0b0b0c; --panel:#0b0b0c; --ink:#ededed; --muted:#8e8e93; --rule:#2b2b2f; --line:#2b2b2f; --tint:#151517; --soft:#151517;
+  --accent:#ff9f1a; --acc:#ff9f1a; --accent-soft:rgba(255,159,26,.14);
+  --up:#3ddc84; --pos:#3ddc84; --down:#ff4d4d; --neg:#ff4d4d; --alt:#ffd23f; --mid:#ffd23f; --press:#ffb000;
+  --violet:#b18cff; --c2:#b18cff; --c3:#33c3f0; --c4:#7d7d84; --band:rgba(255,159,26,.16);
+  --sea:#03070c; --land:#1b1f25; --hold:#1d5a3a; --edge:#3a3f47; --link:#5fb3ff;
+  --f-disp:"IBM Plex Sans Condensed","Arial Narrow",sans-serif; --f-head:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+html,body{background:var(--bg)!important;color:var(--ink)}
+h1,h2{color:var(--accent);font-family:var(--f-disp);letter-spacing:.005em}
+h1{text-transform:uppercase;letter-spacing:.02em}
+h3{color:var(--ink);font-family:var(--f-disp)}
+.eyebrow{color:var(--alt)!important}
+a{color:var(--link)}
+.panel,.card,.tile,.st,.tw,.list,.moves,.mapwrap,.webwrap,.uwl,.voice,.note,.limits,details.more,.kpi,.step,button.b,select,.pill,figure,.rec,.idx a,.tags span{border-radius:2px!important}
+.panel,.card,.st,.kpi{border-color:var(--rule)}
+th{background:#111114!important;color:var(--alt)!important}
+.st .v,.kpi b{color:#fff}
+.pill[aria-pressed="true"],button.b[aria-pressed="true"]{background:var(--accent)!important;border-color:var(--accent)!important;color:#000!important}
+button.b:hover,.pill:hover{border-color:var(--accent)}
+input[type=range]{accent-color:var(--accent)}
+.tabs a[aria-current="page"]{color:#000!important;background:var(--accent)!important;border-color:var(--accent)!important}
+::selection{background:var(--accent);color:#000}
+.bbar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;background:#000;border-bottom:1px solid #2b2b2f;padding:6px max(16px,env(safe-area-inset-left,0px));font:500 12px/1.6 var(--f-mono);letter-spacing:.04em;text-transform:uppercase}
+.bbar .bk{background:var(--accent);color:#000;font-weight:600;padding:0 6px}
+.bbar a{color:var(--ink);text-decoration:none}
+.bbar a:hover,.bbar a[aria-current="page"]{color:var(--accent)}
+.bbar a b{color:var(--alt);font-weight:500;margin-right:4px}
+.bbar .go{margin-left:auto;color:var(--muted)}
+@media (max-width:560px){.bbar .go{display:none}}
+</style>
 </body>
 </html>

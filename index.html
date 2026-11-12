@@ -102,9 +102,13 @@ svg .dot-a{fill:var(--accent)} svg .dot-b{fill:var(--sheet);stroke:var(--alt);st
 .cta:hover{filter:brightness(1.08)}
 .cta:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direction:column;gap:8px;color:var(--muted);font-size:14px}
+details.more{border:1px solid var(--rule);border-radius:4px;padding:10px 14px;background:var(--sheet)}
+details.more>summary{cursor:pointer;font:500 12.5px var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+details.more[open]>summary{margin-bottom:8px}
 </style>
 </head>
 <body>
+<div class="bbar" role="navigation" aria-label="Projects"><span class="bk">MH</span><a href="index.html" aria-current="page"><b>0)</b>HOME</a><a href="nq.html"><b>1)</b>NQ MODEL</a><a href="tail.html"><b>2)</b>TAIL</a><a href="circuit.html"><b>3)</b>CIRCUIT-1</a><span class="go">Halkevych · independent research · autumn 2026</span></div>
 
 
 <div class="wrap">
@@ -126,14 +130,6 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
   </nav>
 </header>
 
-<section class="note" aria-label="How to read these projects">
-  <div class="eyebrow">How to read this</div>
-  <ul>
-    <li>Everything here is research: backtests, historical replays and simulations. I trade only on an Interactive Brokers demo account and claim no live track record.</li>
-    <li>Results are quoted with their caveats. In-sample numbers are shown only as examples of what failed.</li>
-    <li>I designed the research questions, the validation rules and the decisions. The code is Python and C++, written with AI pair-programming.</li>
-  </ul>
-</section>
 
 <section class="stack">
   <div class="eyebrow">The thread through all three</div>
@@ -142,7 +138,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
     <li><p>In 2025 I built my first automated system on Interactive Brokers. Its backtests looked strong, and they turned out to be overstated.</p></li>
     <li><p>That taught me the rule behind everything since: write the expected result before the test, freeze the thresholds, and test on data the model has never seen.</p></li>
     <li><p>I applied it to three areas: intraday structure of Nasdaq-100 futures, distress risk in UK listed companies, and commodity futures after physical supply shocks.</p></li>
-    <li><p>Most of my ideas failed these tests. The few that held are documented below with their limits.</p></li>
+    <li><p>Ideas that fail these tests are rejected and documented; the ones that held are below, with their limits.</p></li>
   </ol>
   <div class="idx">
     <a href="#nq"><span class="mono">01 · Markets</span><b>NQ market model</b><span>1.8m one-minute bars, a market simulator and a strict out-of-sample protocol.</span></a>
@@ -155,7 +151,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
 <article class="rec" id="nq">
   <div class="strip"><span class="id">01 · NQ</span><span>Market microstructure · quant research</span><span>Python</span><span>Data 2007–2025</span></div>
   <h2>A multi-scale market model for Nasdaq-100 futures</h2>
-  <a class="cta" href="nq.html">Open the interactive explorer: 60 strategies, portfolio builder →</a>
+  <a class="cta" href="nq.html">Open the interactive model: market simulator, day replay, axis space, 60 strategies →</a>
   <p class="q">At any moment, from one minute to one month ahead, what is the most effective action after costs, including doing nothing? The model does not forecast prices.</p>
 
   <div class="stack">
@@ -226,10 +222,6 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
     </table></div>
   </div>
 
-  <div class="stack">
-    <h3>What failed</h3>
-    <p>A model fed every feature at once showed a Sharpe ratio of 2.0–2.8 in-sample and fell to about zero or below out of sample. The protocol caught it, and I rejected and documented it. No single strategy is statistically proven yet: the strategy-level Sharpe is about 0.5 ± 0.7. The framework, the validation discipline and the negative results are the achievement.</p>
-  </div>
 
   <div class="voice">
     <div class="eyebrow">In my words · most unexpected</div>
@@ -239,6 +231,10 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
     <div class="eyebrow">In my words · open problem</div>
     <p>I managed to describe the market in many dimensions and to model time differently for different participants. But I still haven't answered one question: how to build a clear strategy without falling back into the standard financial paradigm and collapsing the whole project into the usual two-dimensional view of price against time.</p>
   </div>
+  <details class="more">
+    <summary>Rejected models and limits</summary>
+    <p>A model fed every feature at once showed a Sharpe ratio of 2.0–2.8 in-sample and fell to about zero or below out of sample. The protocol caught it, and I rejected and documented it. No single strategy is statistically proven yet: the strategy-level Sharpe is about 0.5 ± 0.7. The framework, the validation discipline and the negative results are the achievement.</p>
+  </details>
 </article>
 
 <!-- ============ TAIL ============ -->
@@ -298,14 +294,14 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
     <p>The first problem I hit was substitution of concepts: quietly replacing one thing with another, like treating a sector risk as a company risk, or measuring a proxy instead of the real target. I fixed it with mathematical logic. Each company got a fault tree with explicit AND/OR links, and every node had to name its source: data, model or estimate.</p>
   </div>
 
-  <div class="limits">
-    <div class="eyebrow">Limits</div>
+  <details class="more limits">
+    <summary>Limits</summary>
     <ul>
       <li>Several parameters are placeholders awaiting calibration. History is used only as a check, not for fitting.</li>
       <li>In the country map, wall strength and shock force are still ordinal estimates, not money amounts, and there are no links between countries yet. Only the UK has a company-level model.</li>
       <li>Position sizes are hypothetical. No positions were taken.</li>
     </ul>
-  </div>
+  </details>
 </article>
 
 <!-- ============ CIRCUIT-1 ============ -->
@@ -336,7 +332,6 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
         <tr><td>Commodities, strong supply channel</td><td class="n">47</td><td class="r pos">+31.5R (+0.67R per trade)</td></tr>
         <tr><td>Weak channel (country with a small supply share)</td><td class="n">28</td><td class="r">+0.07R per trade</td></tr>
         <tr><td>Trading on data releases (EIA, CPI, WASDE), 2022 replay</td><td class="n">16</td><td class="r">+0.10R per trade</td></tr>
-        <tr><td>"Fear" trades in yen, Swiss franc, short AUD</td><td class="n">52</td><td class="r neg">−24.3R, dropped</td></tr>
         <tr><td>One idea per event, strong channel</td><td class="n">19 ideas</td><td class="r">+9.14R; +2.44R without the 2020 oil price war; −0.57R without 2020 and Ukraine 2022</td></tr>
       </tbody>
     </table></div>
@@ -345,7 +340,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
 
   <div class="two">
     <figure>
-      <div class="fig-title">2022 replay, January–August: where the money was lost</div>
+      <div class="fig-title">2022 replay, January–August: my decisions vs the rules</div>
       <svg viewBox="0 0 600 150" role="img" aria-label="My decisions plus 1.45R on 30 trades; the same trades with rule-based exits plus 6.54R; rule-based entry and exit plus 10.04R on 14 trades">
         <line class="grid" x1="200" y1="6" x2="200" y2="124"/><line class="grid" x1="363.6" y1="6" x2="363.6" y2="124"/><line class="grid" x1="527.3" y1="6" x2="527.3" y2="124"/>
         <text class="lbl" x="0" y="32">My decisions (30)</text><rect class="b-alt" x="200" y="14" width="47.5" height="26"/><text class="val" x="254" y="32">+1.45R</text>
@@ -368,15 +363,6 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
     </figure>
   </div>
 
-  <div class="stack">
-    <h3>Tests I pre-registered and rejected</h3>
-    <ul class="facts">
-      <li>Driver variables give no out-of-sample direction (information coefficient ≈ 0).</li>
-      <li>News enters the price on the day it comes out. After the first day, a shock is a coin flip.</li>
-      <li>A mechanical entry after the USDA WASDE report: rejected. Weekly EIA data adds almost nothing (about +0.03R).</li>
-      <li>Option overlays, a bubble detector (BSADF), straddles after a crash, holding longer, forced-seller trades: none passed the pre-registered rule.</li>
-    </ul>
-  </div>
 
   <div class="voice">
     <div class="eyebrow">In my words · most unexpected</div>
@@ -387,14 +373,24 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
     <p>I underestimated execution stress. Managing these futures positions is genuinely hard, and stress was the main problem. The lesson: the idea and the execution have to be separated, and execution needs rules, not feelings. That is why the machine now handles the mechanics, and I keep the thesis and the decision.</p>
   </div>
 
-  <div class="limits">
-    <div class="eyebrow">Limits</div>
+    <details class="more">
+    <summary>Tests I pre-registered and rejected</summary>
+    <ul class="facts">
+      <li>Driver variables give no out-of-sample direction (information coefficient ≈ 0).</li>
+      <li>News enters the price on the day it comes out. After the first day, a shock is a coin flip.</li>
+      <li>A mechanical entry after the USDA WASDE report: rejected. Weekly EIA data adds almost nothing (about +0.03R).</li>
+      <li>Option overlays, a bubble detector (BSADF), straddles after a crash, holding longer, forced-seller trades: none passed the pre-registered rule.</li>
+      <li>"Fear" trades in the yen, Swiss franc and short AUD: 52 trades, −24.3R, dropped.</li>
+    </ul>
+  </details>
+  <details class="more limits">
+    <summary>Limits</summary>
     <ul>
       <li>The 2010–22 event list was built in hindsight, and the result depends on two events.</li>
       <li>The 2022 replay rules were refined on the same trades they were tested on.</li>
       <li>All checks were done by me; there was no external review. Next step: blind replay and forward paper trading.</li>
     </ul>
-  </div>
+  </details>
 </article>
 
 <!-- ============ LEARNED ============ -->
@@ -404,12 +400,12 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
     <h2>What I learned</h2>
   </div>
   <div class="voice">
-    <div class="eyebrow">In my words · main mistake</div>
-    <p>Overfitting. I kept running into the same problem: backtests fitted to the past. My first system in 2025 looked strong on paper, but the results were overstated. In the NQ project, a model fed every feature at once showed a Sharpe ratio of 2.8 in-sample and fell to about zero out of sample. That is why every project since has rules written before the test, frozen thresholds and checks on data the model has never seen.</p>
-  </div>
-  <div class="voice">
     <div class="eyebrow">In my words · what I will take into a bank or fund</div>
     <p>The most useful thing I learned is mathematical logic as a way to evaluate myself and my own actions. I stopped substituting one concept for another. I now think more structurally, not only about my actions but about my thoughts and concepts, and I break them down clearly with mathematical logic.</p>
+  </div>
+  <div class="voice">
+    <div class="eyebrow">In my words · main mistake</div>
+    <p>Overfitting. I kept running into the same problem: backtests fitted to the past. My first system in 2025 looked strong on paper, but the results were overstated. In the NQ project, a model fed every feature at once showed a Sharpe ratio of 2.8 in-sample and fell to about zero out of sample. That is why every project since has rules written before the test, frozen thresholds and checks on data the model has never seen.</p>
   </div>
   <div class="stack">
     <h3>Skills used</h3>
@@ -422,6 +418,15 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
 </section>
 
 <!-- ============ ABOUT ============ -->
+<section class="note" aria-label="How to read these projects">
+  <div class="eyebrow">How to read this</div>
+  <ul>
+    <li>Everything here is research: backtests, historical replays and simulations. I trade only on an Interactive Brokers demo account and claim no live track record.</li>
+    <li>Results are quoted with their caveats; in-sample numbers are always labelled as in-sample.</li>
+    <li>I designed the research questions, the validation rules and the decisions. The code is Python and C++, written with AI pair-programming.</li>
+  </ul>
+</section>
+
 <section class="stack" id="about">
   <div class="eyebrow">About</div>
   <h2>Before finance</h2>
@@ -436,5 +441,41 @@ footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direc
 
 </div>
 
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&display=swap">
+<style id="bbg">
+/* Terminal theme: black screen, amber headers, white data, green/red for sign. One palette for all four pages. */
+:root:root:root{
+  color-scheme:dark;
+  --bg:#000000; --sheet:#0b0b0c; --panel:#0b0b0c; --ink:#ededed; --muted:#8e8e93; --rule:#2b2b2f; --line:#2b2b2f; --tint:#151517; --soft:#151517;
+  --accent:#ff9f1a; --acc:#ff9f1a; --accent-soft:rgba(255,159,26,.14);
+  --up:#3ddc84; --pos:#3ddc84; --down:#ff4d4d; --neg:#ff4d4d; --alt:#ffd23f; --mid:#ffd23f; --press:#ffb000;
+  --violet:#b18cff; --c2:#b18cff; --c3:#33c3f0; --c4:#7d7d84; --band:rgba(255,159,26,.16);
+  --sea:#03070c; --land:#1b1f25; --hold:#1d5a3a; --edge:#3a3f47; --link:#5fb3ff;
+  --f-disp:"IBM Plex Sans Condensed","Arial Narrow",sans-serif; --f-head:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+html,body{background:var(--bg)!important;color:var(--ink)}
+h1,h2{color:var(--accent);font-family:var(--f-disp);letter-spacing:.005em}
+h1{text-transform:uppercase;letter-spacing:.02em}
+h3{color:var(--ink);font-family:var(--f-disp)}
+.eyebrow{color:var(--alt)!important}
+a{color:var(--link)}
+.panel,.card,.tile,.st,.tw,.list,.moves,.mapwrap,.webwrap,.uwl,.voice,.note,.limits,details.more,.kpi,.step,button.b,select,.pill,figure,.rec,.idx a,.tags span{border-radius:2px!important}
+.panel,.card,.st,.kpi{border-color:var(--rule)}
+th{background:#111114!important;color:var(--alt)!important}
+.st .v,.kpi b{color:#fff}
+.pill[aria-pressed="true"],button.b[aria-pressed="true"]{background:var(--accent)!important;border-color:var(--accent)!important;color:#000!important}
+button.b:hover,.pill:hover{border-color:var(--accent)}
+input[type=range]{accent-color:var(--accent)}
+.tabs a[aria-current="page"]{color:#000!important;background:var(--accent)!important;border-color:var(--accent)!important}
+::selection{background:var(--accent);color:#000}
+.bbar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;background:#000;border-bottom:1px solid #2b2b2f;padding:6px max(16px,env(safe-area-inset-left,0px));font:500 12px/1.6 var(--f-mono);letter-spacing:.04em;text-transform:uppercase}
+.bbar .bk{background:var(--accent);color:#000;font-weight:600;padding:0 6px}
+.bbar a{color:var(--ink);text-decoration:none}
+.bbar a:hover,.bbar a[aria-current="page"]{color:var(--accent)}
+.bbar a b{color:var(--alt);font-weight:500;margin-right:4px}
+.bbar .go{margin-left:auto;color:var(--muted)}
+@media (max-width:560px){.bbar .go{display:none}}
+</style>
 </body>
 </html>
