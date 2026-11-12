@@ -1,0 +1,423 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mykola Halkevych Research</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Independent research in market microstructure, UK credit risk and event-driven commodities by Mykola Halkevych, Banking and Finance student at Manchester Metropolitan University.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a research logbook. One reading column; each project is a filed record with an ID strip, then question → build → validation → findings → what failed → limits. Charts sit inside the column. */
+:root{
+  --bg:#F3F5F7; --sheet:#FFFFFF; --ink:#141A21; --muted:#56616D; --rule:#D5DBE1; --tint:#E8EDF2;
+  --accent:#1F5B8F; --accent-soft:#DDE8F3; --up:#1E7A4C; --down:#B03A2E; --alt:#B07A12;
+  --f-disp:"Archivo","Arial Narrow",Arial,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F141A; --sheet:#161D25; --ink:#E4E9EE; --muted:#9AA6B2; --rule:#2A3440; --tint:#1C2530;
+  --accent:#78AEE0; --accent-soft:#1D2F42; --up:#5CC48F; --down:#EE7F72; --alt:#E3B24F; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font:16px/1.62 var(--f-body);margin:0}
+.wrap{max-width:860px;margin:0 auto;padding-block:40px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:56px}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-disp);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(34px,6vw,52px);font-weight:800;line-height:1.02}
+h2{font-size:clamp(26px,4.2vw,34px);font-weight:800;line-height:1.1}
+h3{font-size:19px;font-weight:700;margin-top:6px}
+p{margin:0;max-width:68ch}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font:500 12px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.stack-lg{display:flex;flex-direction:column;gap:26px}
+/* header */
+header{display:flex;flex-direction:column;gap:16px}
+.lede{font-size:19px;line-height:1.5;color:var(--ink)}
+.sub{color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+nav a{font:500 13px var(--f-mono);text-decoration:none;color:var(--ink);border:1px solid var(--rule);background:var(--sheet);padding:7px 11px;border-radius:4px}
+nav a:hover{border-color:var(--accent);color:var(--accent)}
+/* reading note */
+.note{border:1px solid var(--rule);border-left:4px solid var(--alt);background:var(--sheet);padding:16px 18px;border-radius:0 6px 6px 0}
+.note ul{margin:8px 0 0;padding-left:20px}
+.note li{margin:4px 0;max-width:66ch}
+/* thread */
+ol.thread{margin:0;padding:0;list-style:none;counter-reset:t;display:grid;gap:10px}
+ol.thread li{counter-increment:t;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:baseline}
+ol.thread li::before{content:counter(t);font:600 13px var(--f-mono);color:var(--accent);border:1px solid var(--accent);border-radius:50%;width:26px;height:26px;display:grid;place-items:center}
+/* index of projects */
+.idx{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.idx a{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.idx a:hover{border-color:var(--accent)}
+.idx b{font-family:var(--f-disp);font-size:18px}
+.idx span{font-size:14px;color:var(--muted)}
+/* project record */
+.rec{display:flex;flex-direction:column;gap:22px;scroll-margin-top:16px}
+.strip{display:flex;flex-wrap:wrap;gap:6px 14px;font:500 12px var(--f-mono);color:var(--muted);border-top:2px solid var(--ink);padding-top:10px}
+.strip .id{color:var(--ink);font-weight:600}
+.q{font-size:18px;line-height:1.5;border-left:3px solid var(--accent);padding-left:14px}
+ul.facts{margin:0;padding-left:20px}
+ul.facts li{margin:6px 0;max-width:68ch}
+.voice{background:var(--accent-soft);border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.voice .eyebrow{color:var(--accent)}
+.voice p{font-size:16.5px}
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 11.5px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--tint)}
+tr:last-child td{border-bottom:0}
+td.r{font-family:var(--f-mono);font-variant-numeric:tabular-nums;min-width:12ch}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pos{color:var(--up)} .neg{color:var(--down)}
+figure{margin:0;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:16px 16px 12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:13.5px;color:var(--muted);max-width:70ch}
+.fig-title{font:600 14px var(--f-body)}
+svg text{font-family:var(--f-mono);font-size:12px;fill:var(--muted)}
+svg .lbl{fill:var(--ink);font-family:var(--f-body);font-size:13px}
+svg .val{fill:var(--ink);font-weight:500}
+svg .grid{stroke:var(--rule);stroke-width:1}
+svg .axis{stroke:var(--muted);stroke-width:1}
+svg .b-acc{fill:var(--accent)} svg .b-alt{fill:var(--alt)} svg .b-up{fill:var(--up)} svg .b-down{fill:var(--down)} svg .b-mute{fill:var(--rule)}
+svg .link{stroke:var(--muted);stroke-width:1.5}
+svg .dot-a{fill:var(--accent)} svg .dot-b{fill:var(--sheet);stroke:var(--alt);stroke-width:2.5}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.two{display:grid;grid-template-columns:1fr;gap:14px}
+.limits{border:1px dashed var(--rule);border-radius:6px;padding:14px 16px;background:var(--sheet)}
+.limits ul{margin:6px 0 0;padding-left:20px}
+.limits li{margin:4px 0;max-width:66ch}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags span{font:500 12.5px var(--f-mono);border:1px solid var(--rule);background:var(--sheet);border-radius:4px;padding:4px 8px}
+footer{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direction:column;gap:8px;color:var(--muted);font-size:14px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Independent research · autumn 2026</div>
+  <h1>Mykola Halkevych</h1>
+  <p class="lede">First-year Banking and Finance student at Manchester Metropolitan University. I build research projects on how markets and financial systems break, and I test every idea on data the model has not seen.</p>
+  <p class="sub">Three projects, three areas of finance: intraday market structure, UK credit risk, and commodity markets after geopolitical supply shocks.</p>
+  <nav aria-label="Projects">
+    <a href="#nq">NQ market model</a>
+    <a href="#tail">Tail: UK credit stress</a>
+    <a href="#circuit">Circuit-1: commodities</a>
+    <a href="#learned">What I learned</a>
+    <a href="#about">About</a>
+  </nav>
+</header>
+
+<section class="note" aria-label="How to read these projects">
+  <div class="eyebrow">How to read this</div>
+  <ul>
+    <li>Everything here is research: backtests, historical replays and simulations. I trade only on an Interactive Brokers demo account and claim no live track record.</li>
+    <li>Results are quoted with their caveats. In-sample numbers are shown only as examples of what failed.</li>
+    <li>I designed the research questions, the validation rules and the decisions. The code is Python and C++, written with AI pair-programming.</li>
+  </ul>
+</section>
+
+<section class="stack">
+  <div class="eyebrow">The thread through all three</div>
+  <h2>Write the hypothesis first, then try to break it</h2>
+  <ol class="thread">
+    <li><p>In 2025 I built my first automated system on Interactive Brokers. Its backtests looked strong, and they turned out to be overstated.</p></li>
+    <li><p>That taught me the rule behind everything since: write the expected result before the test, freeze the thresholds, and test on data the model has never seen.</p></li>
+    <li><p>I applied it to three areas: intraday structure of Nasdaq-100 futures, distress risk in UK listed companies, and commodity futures after physical supply shocks.</p></li>
+    <li><p>Most of my ideas failed these tests. The few that held are documented below with their limits.</p></li>
+  </ol>
+  <div class="idx">
+    <a href="#nq"><span class="mono">01 · Markets</span><b>NQ market model</b><span>1.8m one-minute bars, a market simulator and a strict out-of-sample protocol.</span></a>
+    <a href="#tail"><span class="mono">02 · Credit risk</span><b>Tail</b><span>Distress probabilities for 48 UK companies, compared with option prices.</span></a>
+    <a href="#circuit"><span class="mono">03 · Macro &amp; commodities</span><b>Circuit-1</b><span>A protocol for trading only real supply shocks, tested in a date-locked replay.</span></a>
+  </div>
+</section>
+
+<!-- ============ NQ ============ -->
+<article class="rec" id="nq">
+  <div class="strip"><span class="id">01 · NQ</span><span>Market microstructure · quant research</span><span>Python</span><span>Data 2007–2025</span></div>
+  <h2>A multi-scale market model for Nasdaq-100 futures</h2>
+  <p class="q">At any moment, from one minute to one month ahead, what is the most effective action after costs, including doing nothing? The model does not forecast prices.</p>
+
+  <div class="stack">
+    <h3>What I built</h3>
+    <ul class="facts">
+      <li><b>Data pipeline.</b> About 1.8 million one-minute bars of Nasdaq-100 futures (NQ), regular session, September 2007 to December 2025: 4,704 trading days. Added Treasury futures (ZN), crude oil (CL), the VIX, the VXN volatility index, CFTC positioning data and a tick-level sample with buyer- and seller-initiated trades.</li>
+      <li><b>State space.</b> 37 minute-level dimensions: momentum, market "clock speed" and volume tempo, the Hurst exponent, entropy, novelty and cross-market links. On top, 29 slower layers: tail risk, liquidity and the obligations of large participants, such as leveraged-ETF rebalancing, CTA and volatility-target funds, pension rebalancing and the volatility surface.</li>
+      <li><b>Simulated market.</b> A browser-based simulator with modelled participants: pension rebalancing, leveraged-ETF flows, forced sellers and an options market. It runs 15 years in about 1.7 seconds. Every strategy is checked there first: switch off its mechanism, and its edge should disappear.</li>
+      <li><b>Strategy library.</b> 59 futures and options strategies across all horizons, a portfolio builder, and transfers of the framework to Apple stock and crude oil.</li>
+    </ul>
+  </div>
+
+  <div class="stack">
+    <h3>How I validated it</h3>
+    <ul class="facts">
+      <li>Expected results written down before every test.</li>
+      <li>Thresholds fixed on 2011–2016, then tested once on 2017–2025.</li>
+      <li>Placebo controls: the same features shifted three years back.</li>
+      <li>Standard errors clustered by day, and realistic broker costs of 0.5 index points per round trip.</li>
+      <li>S&amp;P 500 futures (ES) kept untouched as a final hold-out.</li>
+    </ul>
+  </div>
+
+  <div class="two">
+    <figure>
+      <div class="fig-title">Cost as a share of a typical move</div>
+      <svg viewBox="0 0 560 128" role="img" aria-label="Round-trip cost is about 14 percent of a typical one-minute move and about 1.3 percent of a typical two-hour move">
+        <line class="grid" x1="140" y1="8" x2="140" y2="100"/><line class="grid" x1="266.7" y1="8" x2="266.7" y2="100"/><line class="grid" x1="393.3" y1="8" x2="393.3" y2="100"/><line class="grid" x1="520" y1="8" x2="520" y2="100"/>
+        <text class="lbl" x="0" y="38">1-minute move</text>
+        <rect class="b-down" x="140" y="18" width="354.7" height="28"/>
+        <text class="val" x="500" y="37">14%</text>
+        <text class="lbl" x="0" y="82">2-hour move</text>
+        <rect class="b-acc" x="140" y="62" width="32.9" height="28"/>
+        <text class="val" x="179" y="81">1.3%</text>
+        <text x="140" y="120" text-anchor="middle">0%</text><text x="266.7" y="120" text-anchor="middle">5%</text><text x="393.3" y="120" text-anchor="middle">10%</text><text x="520" y="120" text-anchor="middle">15%</text>
+      </svg>
+      <figcaption>NQ, 2017–2025, cost of 0.5 index points per round trip. At one minute, costs eat a large part of any move, so short horizons are a cost problem before they are a prediction problem.</figcaption>
+    </figure>
+    <figure>
+      <div class="fig-title">Signals that beat the placebo, by horizon</div>
+      <svg viewBox="0 0 560 222" role="img" aria-label="Number of signals beating the placebo: none at one minute, 11 versus 0 at fifteen minutes, 67 versus 20 at one hour">
+        <line class="grid" x1="50" y1="180" x2="550" y2="180"/><line class="grid" x1="50" y1="134.3" x2="550" y2="134.3"/><line class="grid" x1="50" y1="88.6" x2="550" y2="88.6"/><line class="grid" x1="50" y1="42.9" x2="550" y2="42.9"/>
+        <text x="40" y="184" text-anchor="end">0</text><text x="40" y="138" text-anchor="end">20</text><text x="40" y="92" text-anchor="end">40</text><text x="40" y="47" text-anchor="end">60</text>
+        <rect class="b-acc" x="116" y="179" width="40" height="1"/><rect class="b-mute" x="164" y="179" width="40" height="1"/>
+        <text class="val" x="160" y="170" text-anchor="middle">0 · 0</text>
+        <rect class="b-acc" x="276" y="154.9" width="40" height="25.1"/><rect class="b-mute" x="324" y="179" width="40" height="1"/>
+        <text class="val" x="296" y="148" text-anchor="middle">11</text><text class="val" x="344" y="170" text-anchor="middle">0</text>
+        <rect class="b-acc" x="436" y="26.9" width="40" height="153.1"/><rect class="b-mute" x="484" y="134.3" width="40" height="45.7"/>
+        <text class="val" x="456" y="20" text-anchor="middle">67</text><text class="val" x="504" y="128" text-anchor="middle">20</text>
+        <text class="lbl" x="160" y="204" text-anchor="middle">1 minute</text><text class="lbl" x="320" y="204" text-anchor="middle">15 minutes</text><text class="lbl" x="480" y="204" text-anchor="middle">1 hour</text>
+      </svg>
+      <div class="legend"><span><i style="background:var(--accent)"></i>real features</span><span><i style="background:var(--rule)"></i>placebo (shifted 3 years)</span></div>
+      <figcaption>Features only start to carry information from about 15 minutes. At one minute nothing beats the placebo.</figcaption>
+    </figure>
+  </div>
+
+  <div class="stack">
+    <h3>Key findings</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Finding</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Costs, not direction, decide short horizons</td><td>Cost is about 14% of a typical 1-minute move but about 1.3% of a 2-hour move (2017–25).</td></tr>
+        <tr><td>Minute-level direction is close to noise; size and volume are predictable</td><td>Hurst exponent of direction 0.49–0.51, against 0.72–0.94 for absolute moves. The model ranks the size of the next move well (rank correlation 0.3–0.5) but not its sign.</td></tr>
+        <tr><td>Order flow explains the present, not the future</td><td>Net aggressive buying explains about half of the same minute's move (correlation 0.52–0.56) and about nothing of the next minutes.</td></tr>
+        <tr><td>One robust effect: strong days continue, driven by forced flows</td><td>"Follow the day for 4 hours" was positive in each of 9 out-of-sample years, strongest when leveraged ETFs must rebalance and the VIX is falling. The same rule passed on Apple 2020–25: +5.2 bp per trade after costs, t = 2.0.</td></tr>
+        <tr><td>Selling options pays only at a good price</td><td>Short-option strategies pay off only while the option price stays above about 0.60–0.67× the VXN level, intraday and at one day.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="stack">
+    <h3>What failed</h3>
+    <p>A model fed every feature at once showed a Sharpe ratio of 2.0–2.8 in-sample and fell to about zero or below out of sample. The protocol caught it, and I rejected and documented it. No single strategy is statistically proven yet: the strategy-level Sharpe is about 0.5 ± 0.7. The framework, the validation discipline and the negative results are the achievement.</p>
+  </div>
+
+  <div class="voice">
+    <div class="eyebrow">In my words · most unexpected</div>
+    <p>Time is not the same for different market participants. For a high-frequency trader, a pension fund and a leveraged ETF that rebalances at the close, one hour means completely different things. The second surprise: a normal price chart, price against time, is a two-dimensional picture. It reflects neither real time nor the real market, because the market is a multi-dimensional object.</p>
+  </div>
+  <div class="voice">
+    <div class="eyebrow">In my words · open problem</div>
+    <p>I managed to describe the market in many dimensions and to model time differently for different participants. But I still haven't answered one question: how to build a clear strategy without falling back into the standard financial paradigm and collapsing the whole project into the usual two-dimensional view of price against time.</p>
+  </div>
+</article>
+
+<!-- ============ TAIL ============ -->
+<article class="rec" id="tail">
+  <div class="strip"><span class="id">02 · TAIL</span><span>Credit risk · equity research</span><span>Python</span><span>Results as of 7 Nov 2026</span></div>
+  <h2>Tail: a distress and credit-risk model for UK companies</h2>
+  <p class="q">For 48 UK listed companies, how likely is a forced painful step (a rights issue, a dividend cut or a restructuring) and a 50–70% share-price fall before an option expires? And does the options market price that risk correctly?</p>
+
+  <div class="stack">
+    <h3>What I built</h3>
+    <ul class="facts">
+      <li><b>Coverage.</b> 48 companies: 10 banks, 8 property companies (REITs), 8 housebuilders, 7 utilities, 6 insurers, 4 asset managers, 3 government contractors and 2 consumer names. 44 analysed from reported metrics, 4 built by hand from primary documents, such as Standard Life and Unite Students.</li>
+      <li><b>UK credit web.</b> A map of how stress spreads through the UK system: gilts, private credit, funded reinsurance, commercial property and bank capital. Each scenario comes with a measurable sensor, for example the 10-year gilt yield above 5.5% for two weeks.</li>
+      <li><b>Fault tree per company.</b> AND/OR logic from the shock to the forced step, built from balance-sheet tests: refinancing wall, cash runway, interest cover, CET1 headroom over the MDA threshold, Solvency II ratio and LTV covenant headroom. Every node carries a probability, its source (data, model or estimate) and a sensor to watch.</li>
+      <li><b>Timing model.</b> A stochastic path model with a Bayesian update of current pressure, which gives when the step is likely and how the price travels there.</li>
+      <li><b>Market comparison and sizing.</b> Model probability against option-implied probability (from option prices for 11 names, from volatility for the rest), then quarter-Kelly sizing for buying puts, with a spread penalty and caps of 5% per name and 10% in total.</li>
+      <li><b>Built-in self-checks.</b> Warnings when a sector risk is used as a company risk, when a proxy replaces the real target, when long AND-chains lose probability, and when the company's own defences are ignored.</li>
+    </ul>
+  </div>
+
+  <figure>
+    <div class="fig-title">Model probability against what the options market prices</div>
+    <svg viewBox="0 0 560 232" role="img" aria-label="Model versus option-implied probability: Capita 34.8 versus 26.5 percent, Standard Life 16.6 versus 4.4, St James's Place 12.4 versus 12.2, Babcock 11.2 versus 11.6, Vanquis 8.4 versus 1.4">
+      <line class="grid" x1="160" y1="12" x2="160" y2="200"/><line class="grid" x1="255" y1="12" x2="255" y2="200"/><line class="grid" x1="350" y1="12" x2="350" y2="200"/><line class="grid" x1="445" y1="12" x2="445" y2="200"/><line class="grid" x1="540" y1="12" x2="540" y2="200"/>
+      <text class="lbl" x="0" y="34">Capita</text><line class="link" x1="411.8" y1="30" x2="490.6" y2="30"/><circle class="dot-b" cx="411.8" cy="30" r="6"/><circle class="dot-a" cx="490.6" cy="30" r="6"/>
+      <text class="lbl" x="0" y="74">Standard Life</text><line class="link" x1="201.8" y1="70" x2="317.7" y2="70"/><circle class="dot-b" cx="201.8" cy="70" r="6"/><circle class="dot-a" cx="317.7" cy="70" r="6"/>
+      <text class="lbl" x="0" y="114">St James's Place</text><line class="link" x1="275.9" y1="110" x2="277.8" y2="110"/><circle class="dot-b" cx="275.9" cy="110" r="6"/><circle class="dot-a" cx="277.8" cy="110" r="6"/>
+      <text class="lbl" x="0" y="154">Babcock</text><line class="link" x1="266.4" y1="150" x2="270.2" y2="150"/><circle class="dot-a" cx="266.4" cy="150" r="6"/><circle class="dot-b" cx="270.2" cy="150" r="6"/>
+      <text class="lbl" x="0" y="194">Vanquis</text><line class="link" x1="173.3" y1="190" x2="239.8" y2="190"/><circle class="dot-b" cx="173.3" cy="190" r="6"/><circle class="dot-a" cx="239.8" cy="190" r="6"/>
+      <text x="160" y="222" text-anchor="middle">0%</text><text x="255" y="222" text-anchor="middle">10%</text><text x="350" y="222" text-anchor="middle">20%</text><text x="445" y="222" text-anchor="middle">30%</text><text x="540" y="222" text-anchor="middle">40%</text>
+    </svg>
+    <div class="legend"><span><i style="background:var(--accent)"></i>my model</span><span><i style="background:var(--sheet);border:2px solid var(--alt)"></i>option-implied</span></div>
+    <figcaption>For most companies the model and the market roughly agree (St James's Place, Babcock). A few names are flagged as riskier than options imply, e.g. Standard Life for a −50% fall by September 2029. Several inputs are still placeholders, so these are not calibrated forecasts.</figcaption>
+  </figure>
+
+  <div class="stack">
+    <h3>Results</h3>
+    <ul class="facts">
+      <li>For most companies the model and the option market roughly agree: St James's Place 12.4% against 12.2%, Babcock 11.2% against 11.6%.</li>
+      <li>The model flags a few names as riskier than options imply: Standard Life 16.6% against 4.4%, Vanquis 8.4% against 1.4%, Capita 34.8% against 26.5%.</li>
+      <li>Only 3 positions get a positive Kelly size, 2.8% of capital in total. Under the most pessimistic placeholder parameters almost nothing survives, and the model reports that openly.</li>
+    </ul>
+  </div>
+
+  <div class="stack">
+    <h3>Beyond the UK: 358 lines of defence</h3>
+    <p>To see where the UK sits, I mapped the defences of 20 countries and the EU level: UK, France, Sweden, Germany, the Netherlands, Belgium, Ireland, Switzerland, Austria, Italy, Spain, Portugal, Norway, Denmark, Finland, Japan, South Korea, Mexico, Brazil and South Africa. That gave 358 "walls" (central-bank backstops, capital buffers, mortgage rules, deposit guarantees, fiscal rules), each with the assumption it relies on and what it does not cover, plus 41 external shocks and 200 links between walls inside each country. I model it as a Colonel Blotto game: a shock breaks a wall when its force exceeds the wall's strength.</p>
+  </div>
+
+  <div class="voice">
+    <div class="eyebrow">In my words · most unexpected</div>
+    <p>At the company level there were few real surprises. What surprised me was the system. Banks and governments keep preparing for the last war. In a Colonel Blotto game, they put their resources where the last crisis hit, so the break happens in places that were considered safe, because no one was defending them. And this is not only a UK problem. The same pattern shows up almost everywhere: in the UK the weak spot is gilts and long-term bonds, in Sweden it is property, in France it is credit, the banking system and mortgages.</p>
+  </div>
+  <div class="voice">
+    <div class="eyebrow">In my words · my mistake</div>
+    <p>The first problem I hit was substitution of concepts: quietly replacing one thing with another, like treating a sector risk as a company risk, or measuring a proxy instead of the real target. I fixed it with mathematical logic. Each company got a fault tree with explicit AND/OR links, and every node had to name its source: data, model or estimate.</p>
+  </div>
+
+  <div class="limits">
+    <div class="eyebrow">Limits</div>
+    <ul>
+      <li>Several parameters are placeholders awaiting calibration. History is used only as a check, not for fitting.</li>
+      <li>In the country map, wall strength and shock force are still ordinal estimates, not money amounts, and there are no links between countries yet. Only the UK has a company-level model.</li>
+      <li>Position sizes are hypothetical. No positions were taken.</li>
+    </ul>
+  </div>
+</article>
+
+<!-- ============ CIRCUIT-1 ============ -->
+<article class="rec" id="circuit">
+  <div class="strip"><span class="id">03 · CIRCUIT-1</span><span>Macro · commodities · geopolitics</span><span>Python, C++20</span><span>Oct–Nov 2026</span></div>
+  <h2>Circuit-1: event-driven macro and commodity futures</h2>
+  <p class="q">Can a disciplined process trade commodity and currency futures only after a real physical supply shock (a war hitting a supplier, sanctions with a start date, an export ban, a blocked route) and stay out the rest of the time? Typically that means 2–3 ideas a year.</p>
+
+  <div class="stack">
+    <h3>What I built</h3>
+    <ul class="facts">
+      <li><b>Trigger map.</b> 9 event classes: war, dated sanctions, export bans, blockades, politically forced shutdowns, trade wars on a key flow, cartel break-ups, country-specific economic shocks, and accidents or extreme weather. Each lists the markets it hits hardest and what does not count.</li>
+      <li><b>Severity test.</b> 5 questions before any trade: what physically breaks and how much; is there a dated mechanism; who replaces the supply and how fast; what will show the disruption has faded; which market expresses it most cleanly. Proposed threshold: at least 3% of world supply, 10% of a region's imports or 20% of world exports.</li>
+      <li><b>Event lifecycle.</b> Threat → dated mechanism → disruption → adaptation → normalisation. Entry is allowed only at stages 2–3; adaptation means exit.</li>
+      <li><b>Risk rules.</b> One event is one idea and one unit of risk (1R). 1R = daily volatility (63 sessions) × √20. Stop at −1R, monthly loss limit −1R, at most two events at once.</li>
+      <li><b>Date-locked replay of 2022.</b> A cursor moves through 2022 week by week. Only facts dated on or before the cursor are shown, and I make every decision. All decisions go into a journal (472 rows).</li>
+      <li><b>Hypothesis machine c1m (C++20).</b> Each monthly protocol is compiled and sealed with a SHA-256 hash before the data arrives. Data collectors for Interactive Brokers, EIA, FRED, CFTC COT, USDA WASDE and NOAA weather. It handles the mechanics of holding and exits.</li>
+      <li><b>Hypothesis standard.</b> Built on Popper and pre-registration: arguments for and against plus a null hypothesis, numeric kill conditions, and my own probabilities scored with the Brier score.</li>
+    </ul>
+  </div>
+
+  <div class="stack">
+    <h3>Retrospective of geopolitical supply shocks, 2010–2022</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Test</th><th class="n">Trades</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Commodities, strong supply channel</td><td class="n">47</td><td class="r pos">+31.5R (+0.67R per trade)</td></tr>
+        <tr><td>Weak channel (country with a small supply share)</td><td class="n">28</td><td class="r">+0.07R per trade</td></tr>
+        <tr><td>Trading on data releases (EIA, CPI, WASDE), 2022 replay</td><td class="n">16</td><td class="r">+0.10R per trade</td></tr>
+        <tr><td>"Fear" trades in yen, Swiss franc, short AUD</td><td class="n">52</td><td class="r neg">−24.3R, dropped</td></tr>
+        <tr><td>One idea per event, strong channel</td><td class="n">19 ideas</td><td class="r">+9.14R; +2.44R without the 2020 oil price war; −0.57R without 2020 and Ukraine 2022</td></tr>
+      </tbody>
+    </table></div>
+    <p>The edge rests on a few very large events and is not statistically proven (t ≈ 1.2). The event list was assembled in hindsight, so the next step is a blind radar in replay and forward paper trading.</p>
+  </div>
+
+  <div class="two">
+    <figure>
+      <div class="fig-title">2022 replay, January–August: where the money was lost</div>
+      <svg viewBox="0 0 600 150" role="img" aria-label="My decisions plus 1.45R on 30 trades; the same trades with rule-based exits plus 6.54R; rule-based entry and exit plus 10.04R on 14 trades">
+        <line class="grid" x1="200" y1="6" x2="200" y2="124"/><line class="grid" x1="363.6" y1="6" x2="363.6" y2="124"/><line class="grid" x1="527.3" y1="6" x2="527.3" y2="124"/>
+        <text class="lbl" x="0" y="32">My decisions (30)</text><rect class="b-alt" x="200" y="14" width="47.5" height="26"/><text class="val" x="254" y="32">+1.45R</text>
+        <text class="lbl" x="0" y="72">Rule-based exits (29)</text><rect class="b-acc" x="200" y="54" width="214" height="26"/><text class="val" x="421" y="72">+6.54R</text>
+        <text class="lbl" x="0" y="112">Entry + exit rules (14)</text><rect class="b-acc" x="200" y="94" width="328.6" height="26"/><text class="val" x="534" y="112">+10.0R</text>
+        <text x="200" y="142" text-anchor="middle">0R</text><text x="363.6" y="142" text-anchor="middle">5R</text><text x="527.3" y="142" text-anchor="middle">10R</text>
+      </svg>
+      <figcaption>The engine reproduces my journal to within about 0.01R per trade. The rules were written after these trades, so this is in-sample and not proof. The 16 trades the entry rules would have rejected lost −6.80R.</figcaption>
+    </figure>
+    <figure>
+      <div class="fig-title">2022 replay by type of driver</div>
+      <svg viewBox="0 0 600 140" role="img" aria-label="Geopolitical driver plus 3.57R on 9 trades, numeric driver plus 1.59R on 16 trades, no driver minus 2.93R on 10 trades">
+        <line class="grid" x1="230" y1="6" x2="230" y2="112"/><line class="axis" x1="330" y1="6" x2="330" y2="112"/><line class="grid" x1="430" y1="6" x2="430" y2="112"/><line class="grid" x1="530" y1="6" x2="530" y2="112"/>
+        <text class="lbl" x="0" y="30">Geopolitics (9)</text><rect class="b-up" x="330" y="12" width="178.5" height="26"/><text class="val" x="514" y="30">+3.57R</text>
+        <text class="lbl" x="0" y="66">Numeric driver (16)</text><rect class="b-acc" x="330" y="48" width="79.5" height="26"/><text class="val" x="415" y="66">+1.59R</text>
+        <text class="lbl" x="0" y="102">No driver (10)</text><rect class="b-down" x="183.5" y="84" width="146.5" height="26"/><text class="val" x="338" y="102">−2.93R</text>
+        <text x="230" y="132" text-anchor="middle">−2R</text><text x="330" y="132" text-anchor="middle">0</text><text x="430" y="132" text-anchor="middle">+2R</text><text x="530" y="132" text-anchor="middle">+4R</text>
+      </svg>
+      <figcaption>Full year 2022: 35 trades, +2.24R, t ≈ 0.3, so no proven edge. Trades with a named geopolitical driver did best; trades with no driver lost. That is why the protocol moved to geopolitical events only.</figcaption>
+    </figure>
+  </div>
+
+  <div class="stack">
+    <h3>Tests I pre-registered and rejected</h3>
+    <ul class="facts">
+      <li>Driver variables give no out-of-sample direction (information coefficient ≈ 0).</li>
+      <li>News enters the price on the day it comes out. After the first day, a shock is a coin flip.</li>
+      <li>A mechanical entry after the USDA WASDE report: rejected. Weekly EIA data adds almost nothing (about +0.03R).</li>
+      <li>Option overlays, a bubble detector (BSADF), straddles after a crash, holding longer, forced-seller trades: none passed the pre-registered rule.</li>
+    </ul>
+  </div>
+
+  <div class="voice">
+    <div class="eyebrow">In my words · most unexpected</div>
+    <p>How big the gap is between building a hypothesis and actually executing it. You have to separate the idea from holding and managing the position, because stress affects you a lot while you are in a trade, and it eats a large part of the profit. In the replay my own decisions made +1.45R, while the same trades with rule-based exits made +6.5R. That showed me where the money was lost: in execution, not in the ideas.</p>
+  </div>
+  <div class="voice">
+    <div class="eyebrow">In my words · my mistake</div>
+    <p>I underestimated execution stress. Managing these futures positions is genuinely hard, and stress was the main problem. The lesson: the idea and the execution have to be separated, and execution needs rules, not feelings. That is why the machine now handles the mechanics, and I keep the thesis and the decision.</p>
+  </div>
+
+  <div class="limits">
+    <div class="eyebrow">Limits</div>
+    <ul>
+      <li>The 2010–22 event list was built in hindsight, and the result depends on two events.</li>
+      <li>The 2022 replay rules were refined on the same trades they were tested on.</li>
+      <li>All checks were done by me; there was no external review. Next step: blind replay and forward paper trading.</li>
+    </ul>
+  </div>
+</article>
+
+<!-- ============ LEARNED ============ -->
+<section class="stack-lg" id="learned">
+  <div class="stack">
+    <div class="eyebrow">Across all three projects</div>
+    <h2>What I learned</h2>
+  </div>
+  <div class="voice">
+    <div class="eyebrow">In my words · main mistake</div>
+    <p>Overfitting. I kept running into the same problem: backtests fitted to the past. My first system in 2025 looked strong on paper, but the results were overstated. In the NQ project, a model fed every feature at once showed a Sharpe ratio of 2.8 in-sample and fell to about zero out of sample. That is why every project since has rules written before the test, frozen thresholds and checks on data the model has never seen.</p>
+  </div>
+  <div class="voice">
+    <div class="eyebrow">In my words · what I will take into a bank or fund</div>
+    <p>The most useful thing I learned is mathematical logic as a way to evaluate myself and my own actions. I stopped substituting one concept for another. I now think more structurally, not only about my actions but about my thoughts and concepts, and I break them down clearly with mathematical logic.</p>
+  </div>
+  <div class="stack">
+    <h3>Skills used</h3>
+    <div class="tags">
+      <span>out-of-sample testing</span><span>placebo controls</span><span>pre-registration</span><span>clustered standard errors</span><span>Monte Carlo simulation</span><span>Bayesian updating</span><span>fault-tree analysis</span><span>Kelly sizing</span><span>Hurst exponent</span><span>Brier score</span>
+      <span>futures &amp; options</span><span>implied volatility</span><span>transaction-cost analysis</span><span>order flow</span><span>CET1, Solvency II, LTV covenants</span><span>commodity supply chains</span>
+      <span>Python (pandas, NumPy, scikit-learn)</span><span>C++20</span><span>Interactive Brokers API</span><span>Databento</span><span>EIA, FRED, CFTC, USDA data</span><span>interactive HTML dashboards</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section class="stack" id="about">
+  <div class="eyebrow">About</div>
+  <h2>Before finance</h2>
+  <p>I'm from Lutsk, Ukraine, and lived in Warsaw from 17 to 21. I co-founded Quantum Group, a car rental company for taxi drivers, where I was responsible for strategy, legal and finance while my partner ran operations; the fleet grew from 2 to 10 cars. I also worked as an operations manager at the Polish-Ukrainian Chamber of Commerce, and taught myself C++ and Unreal Engine to release a game on Steam. I now study Banking and Finance at Manchester Metropolitan University.</p>
+  <p>Languages: Ukrainian, Russian, English, Polish.</p>
+</section>
+
+<footer>
+  <span>GitHub: <a href="https://github.com/halkevychmykola-hue">github.com/halkevychmykola-hue</a></span>
+  <span>All figures come from my project files. Backtests and replays are research, not trading results.</span>
+</footer>
+
+</div>
+
+</body></html>
